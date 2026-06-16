@@ -4,30 +4,20 @@ import numpy as np
 from typing import List, Dict, Tuple
 from collections import defaultdict
 
+# Engine untuk membentuk kelompok belajar heterogen menggunakan algoritma greedy
 class GroupingEngine:
     
+    # Inisialisasi target ukuran kelompok
     def __init__(self, group_size: int = 4):
         self.group_size = group_size
     
+    # Algoritma Round-Robin Greedy untuk menyusun kelompok heterogen
     def form_groups(self,
                     nim_list: List[str],
                     cluster_labels: np.ndarray,
                     feature_matrix: np.ndarray,
                     cluster_semantic: Dict[int, str],
                     materi_list: List[str]) -> List[Dict]:
-        """
-        Greedy algorithm untuk membentuk kelompok heterogen.
-        
-        Strategy:
-        1. Sort mahasiswa berdasarkan cluster (urutan: Mahir, Cukup, Remedial)
-        2. Gunakan Round-Robin Greedy: ambil satu mahasiswa dari tiap cluster
-           secara bergiliran sampai kelompok penuh.
-        3. Sisa mahasiswa (jika N tidak habis dibagi group_size) 
-           didistribusikan ke kelompok yang paling heterogen.
-        
-        Returns:
-            List of group dictionaries dengan informasi lengkap + reasoning
-        """
         n = len(nim_list)
         
         # Kelompokkan mahasiswa per cluster
@@ -36,7 +26,7 @@ class GroupingEngine:
             cluster_id = int(cluster_labels[idx])
             cluster_buckets[cluster_id].append(idx)
         
-        # Sort cluster berdasarkan rank (Mahir dulu, lalu Cukup, lalu Remedial)
+        # Sort cluster berdasarkan rata-rata penguasaan (Mahir -> Remedial)
         avg_mastery_per_cluster = {}
         for c_id, indices in cluster_buckets.items():
             avg_mastery_per_cluster[c_id] = np.mean(feature_matrix[indices].mean(axis=1))
@@ -44,25 +34,21 @@ class GroupingEngine:
         sorted_clusters = sorted(
             cluster_buckets.keys(),
             key=lambda c: avg_mastery_per_cluster[c],
-            reverse=True  # Mahir di depan
+            reverse=True
         )
         
-        # Round-Robin Greedy Assignment
-        groups_indices = []  # List of lists of student indices
+        # Proses pembagian anggota kelompok dengan Round-Robin
+        groups_indices = []  
         current_group = []
-        
-        # Iterator round-robin antar cluster
         cluster_pointers = {c: 0 for c in sorted_clusters}
-        
-        # Flatten dengan round-robin
         assigned = set()
+        
         while len(assigned) < n:
             progress = False
             for c_id in sorted_clusters:
                 bucket = cluster_buckets[c_id]
                 ptr = cluster_pointers[c_id]
                 
-                # Temukan mahasiswa berikutnya yang belum di-assign
                 while ptr < len(bucket) and bucket[ptr] in assigned:
                     ptr += 1
                 cluster_pointers[c_id] = ptr
@@ -81,11 +67,11 @@ class GroupingEngine:
             if not progress:
                 break
         
-        # Sisa mahasiswa → distribusikan ke kelompok terakhir
+        # Sisa mahasiswa yang tidak pas dimasukkan ke kelompok terakhir
         if current_group:
             groups_indices.append(current_group)
         
-        # Build output dengan reasoning
+        # Menyusun data keluaran lengkap kelompok
         groups_output = []
         for g_idx, group in enumerate(groups_indices):
             group_members = []
@@ -117,66 +103,110 @@ class GroupingEngine:
         
         return groups_output
     
+    # Menghitung skor keberagaman klaster (Heterogeneity Score)
     def _calc_heterogeneity(self, members: List[Dict]) -> float:
-        """
-        Heterogeneity = proporsi cluster unik dalam kelompok.
-        Score = 1.0 berarti semua anggota dari cluster berbeda (ideal).
-        """
         clusters = [m['cluster_id'] for m in members]
         unique_ratio = len(set(clusters)) / len(clusters)
         return round(unique_ratio, 3)
     
+    # Membuat analisis dinamika kelompok dan tutor sebaya
     def _generate_reasoning(self, members: List[Dict], materi_list: List[str]) -> str:
-        """
-        Menghasilkan string reasoning mengapa kelompok ini dibentuk.
-        
-        Logic:
-        1. Identifikasi siapa "mentor" (mahir) dan siapa yang butuh bantuan
-        2. Identifikasi keunggulan spesifik tiap anggota pada materi tertentu
-        3. Format reasoning sebagai narasi yang readable
-        """
-        reasons = []
-        
-        # Sort by avg_mastery descending
         sorted_members = sorted(members, key=lambda m: m['avg_mastery'], reverse=True)
-        
-        # Identifikasi peran
         top = sorted_members[0]
-        bottom = sorted_members[-1]
+        n_clusters = len(set(m['cluster_id'] for m in members))
         
-        reasons.append(
-            f"Kelompok ini dirancang heterogen dari {len(set(m['cluster_id'] for m in members))} "
-            f"level kompetensi berbeda."
-        )
+        reason_lines = [
+            f"Komposisi: Heterogen dari {n_clusters} level kompetensi.",
+            f"Peer-Mentor: {top['nim']} ({top['cluster_label']}, avg={top['avg_mastery']:.1%})",
+            "Dynamics:"
+        ]
         
-        reasons.append(
-            f"{top['nim']} ({top['cluster_label']}, avg mastery={top['avg_mastery']:.1%}) "
-            f"berperan sebagai peer-mentor untuk anggota lain."
-        )
-        
-        # Identifikasi materi unggulan & kelemahan
         for m in sorted_members[1:]:
-            strong_materi = max(
-                materi_list, key=lambda mat: m['mastery_vector'].get(mat, 0)
-            )
             weak_materi = min(
                 materi_list, key=lambda mat: m['mastery_vector'].get(mat, 0)
             )
             
-            # Cari siapa yang kuat di weak_materi tersebut
             helper = max(
                 sorted_members,
                 key=lambda x: x['mastery_vector'].get(weak_materi, 0)
                 if x['nim'] != m['nim'] else -1
             )
             
-            reasons.append(
-                f"{m['nim']} ({m['cluster_label']}) unggul di '{strong_materi}' "
-                f"(P(L)={m['mastery_vector'].get(strong_materi, 0):.1%}) "
-                f"namun perlu penguatan di '{weak_materi}' "
-                f"(P(L)={m['mastery_vector'].get(weak_materi, 0):.1%}), "
-                f"di mana {helper['nim']} dapat membantu "
-                f"(P(L)={helper['mastery_vector'].get(weak_materi, 0):.1%})."
+            weak_val = m['mastery_vector'].get(weak_materi, 0)
+            helper_val = helper['mastery_vector'].get(weak_materi, 0)
+            
+            reason_lines.append(
+                f"  * {m['nim']} ({m['cluster_label']}) butuh bantuan '{weak_materi}' ({weak_val:.1%}) -> dibantu {helper['nim']} ({helper_val:.1%})"
             )
         
-        return " ".join(reasons)
+        return "\n".join(reason_lines)
+
+# Blok eksekusi mandiri untuk demo Grouping
+if __name__ == "__main__":
+    import os
+    import sys
+    import pandas as pd
+    
+    # Impor sibling bkt_engine dan clustering_engine
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+    from bkt_engine import BKTEngine
+    from clustering_engine import ClusteringEngine
+    
+    app_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.path.dirname(app_dir)
+    mahasiswa_csv = os.path.join(base_dir, "dataset", "mahasiswa.csv")
+    kuis_csv = os.path.join(base_dir, "dataset", "kuis_struktur.csv")
+    log_csv = os.path.join(base_dir, "dataset", "mahasiswa_log_jawaban.csv")
+    
+    print("\n" + "="*70)
+    print(" GREEDY GROUPING ")
+    print("="*70)
+    
+    print("Processing logs using BKT & Clustering Engines...")
+    df_kuis = pd.read_csv(kuis_csv)
+    df_log = pd.read_csv(log_csv).merge(df_kuis[['ID_Soal', 'Materi']], on='ID_Soal')
+    
+    bkt = BKTEngine()
+    bkt.process_log(df_log)
+    
+    df_mhs = pd.read_csv(mahasiswa_csv)
+    materi_list = df_kuis['Materi'].unique().tolist()
+    nim_list = df_mhs['NIM'].astype(str).tolist()
+    mhs_map = dict(zip(df_mhs['NIM'].astype(str), df_mhs['Nama']))
+    
+    ce = ClusteringEngine()
+    X = ce.build_feature_matrix(bkt, nim_list, materi_list)
+    optimal_k = ce.find_optimal_k(X)
+    cluster_labels = ce.fit(X, k=optimal_k)
+    profile = ce.get_cluster_profile(X, cluster_labels, materi_list)
+    
+    # Penentuan nama klaster secara lokal
+    avg_mastery = profile.mean(axis=1).sort_values(ascending=False)
+    semantic_labels = {}
+    rank_labels = ["Mahir", "Cukup", "Perlu Bimbingan"]
+    for rank, cluster_id in enumerate(avg_mastery.index):
+        label = rank_labels[rank] if rank < len(rank_labels) else f"Cluster-{rank}"
+        semantic_labels[cluster_id] = label
+        
+    ge = GroupingEngine(group_size=4)
+    print("Menyusun kelompok heterogen (Round-Robin Greedy)...")
+    groups = ge.form_groups(nim_list, cluster_labels, X, semantic_labels, materi_list)
+    
+    print(f"\n[OUTPUT] Berhasil membentuk {len(groups)} kelompok belajar:")
+    for group in groups[:5]: 
+        g_id = group['kelompok_id']
+        h_score = group['heterogeneity_score']
+        reasoning = group['reasoning']
+        
+        print(f"\n[KELOMPOK {g_id}] (Diversity Score: {h_score})")
+        print("-" * 90)
+        print(f"  {'NIM':<10} | {'Nama Mahasiswa':<25} | {'Klaster':<15} | {'Rata-rata P(Ln)':<15}")
+        print("-" * 90)
+        for member in group['anggota']:
+            nim_str = str(member['nim'])
+            nama = mhs_map.get(nim_str, "Tidak Dikenal")
+            print(f"  {nim_str:<10} | {nama:<25} | {member['cluster_label']:<15} | {member['avg_mastery']:<15.3f}")
+        print("  Dinamika Kelompok:")
+        for line in reasoning.split('\n'):
+            print(f"    {line}")
+        print()
