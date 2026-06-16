@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Driven Adaptive Learning System</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --surface-color: rgba(22, 28, 45, 0.65);
+            --surface-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%);
+            --accent-green: #10b981;
+            --accent-yellow: #f59e0b;
+            --accent-red: #ef4444;
+            --font-family: 'Plus Jakarta Sans', sans-serif;
+            
+            --mahir-color: #10b981;
+            --cukup-color: #f59e0b;
+            --remedial-color: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.15) 0px, transparent 50%);
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            min-height: 100/vh;
+            line-height: 1.6;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header Styling */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--surface-border);
+        }
+
+        .header-title h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #a5b4fc, #818cf8, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.05em;
+        }
+
+        .header-title p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-top: 0.25rem;
+        }
+
+        .badge {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: #a5b4fc;
+            padding: 0.4rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Tabs Styling */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--surface-border);
+            padding-bottom: 1px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-family: var(--font-family);
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            color: #818cf8;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary-gradient);
+            border-radius: 999px;
+        }
+
+        /* Card Panels */
+        .panel {
+            display: none;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Dashboard Overview Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--surface-color);
+            border: 1px solid var(--surface-border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .stat-card .label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-card .value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-top: 0.5rem;
+        }
+
+        .stat-card .desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        /* Grid Layouts for Content */
+        .dashboard-content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .glass-panel {
+            background: var(--surface-color);
+            border: 1px solid var(--surface-border);
+            border-radius: 1.25rem;
+            padding: 2rem;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-panel h2 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #e5e7eb;
+        }
+
+        /* Table Styling */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 0.75rem;
+            border: 1px solid var(--surface-border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: rgba(30, 41, 59, 0.8);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 1rem 1.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--surface-border);
+        }
+
+        td {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--surface-border);
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Status & Labels */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-mahir {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--mahir-color);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-cukup {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--cukup-color);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .status-remedial {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--remedial-color);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        /* Study Groups Cards UI */
+        .groups-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 2rem;
+        }
+
+        @media (max-width: 480px) {
+            .groups-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .group-card {
+            background: var(--surface-color);
+            border: 1px solid var(--surface-border);
+            border-radius: 1.25rem;
+            padding: 2rem;
+            backdrop-filter: blur(20px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .group-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+        }
+
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--surface-border);
+            padding-bottom: 1rem;
+        }
+
+        .group-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #f3f4f6;
+        }
+
+        .group-members {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .member-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .member-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .member-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .member-nim {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .group-reasoning {
+            background: rgba(99, 102, 241, 0.04);
+            border: 1px solid rgba(99, 102, 241, 0.1);
+            border-radius: 0.75rem;
+            padding: 1rem 1.25rem;
+            font-size: 0.85rem;
+            color: #d1d5db;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .group-reasoning::before {
+            content: 'AI Grouping Rationale';
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #818cf8;
+            margin-bottom: 0.4rem;
+            letter-spacing: 0.05em;
+        }
+
+        /* Personalized Learning Path UI */
+        .student-picker-container {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: var(--surface-color);
+            border: 1px solid var(--surface-border);
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            backdrop-filter: blur(20px);
+        }
+
+        .student-select {
+            background: #1f2937;
+            border: 1px solid var(--surface-border);
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            font-size: 0.95rem;
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            flex-grow: 1;
+            max-width: 400px;
+        }
+
+        .student-select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+
+        .learning-path-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .learning-path-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .path-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .path-timeline::before {
+            content: '';
+            position: absolute;
+            left: 0.25rem;
+            top: 0.5rem;
+            bottom: 0.5rem;
+            width: 2px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .path-step {
+            position: relative;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .path-step:hover {
+            background: rgba(255,255,255,0.04);
+            border-color: rgba(99, 102, 241, 0.25);
+            transform: translateX(4px);
+        }
+
+        .path-step::before {
+            content: '';
+            position: absolute;
+            left: -1.5rem;
+            top: 1.5rem;
+            width: 0.6rem;
+            height: 0.6rem;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid var(--bg-color);
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        .path-step.active-step::before {
+            background: #818cf8;
+            box-shadow: 0 0 10px #818cf8;
+        }
+
+        .step-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #f3f4f6;
+        }
+
+        .step-priority {
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            background: rgba(99,102,241,0.2);
+            color: #a5b4fc;
+            padding: 0.15rem 0.5rem;
+            border-radius: 0.25rem;
+        }
+
+        .step-score {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Error state */
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        /* Loading */
+        .loader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 5rem 0;
+            gap: 1rem;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(99, 102, 241, 0.1);
+            border-left-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Dashboard Header -->
+        <header>
+            <div class="header-title">
+                <h1>Frezga AI Dashboard</h1>
+                <p>Adaptive Study Grouping & Personalized Learning Path System</p>
+            </div>
+            <div>
+                <span class="badge">Progress 2: Integrated Engine Test</span>
+            </div>
+        </header>
+
+        <!-- Tab Controls -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('overview')">Lecturer Overview</button>
+            <button class="tab-btn" onclick="switchTab('groups')">Study Groups</button>
+            <button class="tab-btn" onclick="switchTab('learning')">Personalized Learning Paths</button>
+        </div>
+
+        <!-- LOADING STATE -->
+        <div id="loader" class="loader">
+            <div class="spinner"></div>
+            <p style="color: var(--text-secondary);">Processing data using BKT, K-Means Clustering, and Greedy algorithm...</p>
+        </div>
+
+        <!-- ERROR STATE -->
+        <div id="error" class="error-message" style="display: none;"></div>
+
+        <!-- MAIN DASHBOARD CONTENT -->
+        <div id="dashboard-content" style="display: none;">
+            
+            <!-- PANEL 1: OVERVIEW -->
+            <div id="overview-panel" class="panel active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="label">Total Students</div>
+                        <div class="value" id="stat-total-students">0</div>
+                        <div class="desc">Loaded from mahasiswa.csv</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">Competency Clusters</div>
+                        <div class="value" id="stat-clusters">K = 0</div>
+                        <div class="desc">Auto-selected by K-Means Elbow</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">Avg System Mastery</div>
+                        <div class="value" id="stat-avg-mastery">0%</div>
+                        <div class="desc">Overall student P(Ln) mean</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">Formed Groups</div>
+                        <div class="value" id="stat-groups">0</div>
+                        <div class="desc">Greedy heterogeneous groups</div>
+                    </div>
+                </div>
+
+                <div class="dashboard-content-grid">
+                    <div class="glass-panel">
+                        <h2>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #6366f1;"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>
+                            Competency Cluster Centroid Profile
+                        </h2>
+                        <div style="height: 350px; position: relative;">
+                            <canvas id="profileChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-panel">
+                        <h2>Cluster Distribution</h2>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Cluster Name</th>
+                                        <th>Size</th>
+                                        <th>Avg P(Ln)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cluster-dist-tbody">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL 2: STUDY GROUPS -->
+            <div id="groups-panel" class="panel">
+                <div class="groups-grid" id="groups-container">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- PANEL 3: PERSONAL LEARNING PATH -->
+            <div id="learning-panel" class="panel">
+                <div class="student-picker-container">
+                    <label for="student-select" style="font-weight: 600; color: var(--text-primary);">Select Student:</label>
+                    <select id="student-select" class="student-select" onchange="loadStudentPath()">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+
+                <div class="learning-path-grid">
+                    <!-- Left: Profile Summary Card -->
+                    <div class="glass-panel" id="student-profile-card">
+                        <!-- Populated dynamically -->
+                    </div>
+
+                    <!-- Right: Timeline Learning Path -->
+                    <div class="glass-panel">
+                        <h2 style="margin-bottom: 2rem;">Recommended Concept Learning Path</h2>
+                        <div class="path-timeline" id="path-timeline-container">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Global variables to store processed dataset
+        let appData = null;
+        let profileChartInstance = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('/api/results')
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.error || 'Server error'); });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    appData = data;
+                    document.getElementById('loader').style.display = 'none';
+                    document.getElementById('dashboard-content').style.display = 'block';
+                    
+                    initializeDashboard();
+                })
+                .catch(error => {
+                    document.getElementById('loader').style.display = 'none';
+                    const errorDiv = document.getElementById('error');
+                    errorDiv.innerText = error.message;
+                    errorDiv.style.display = 'block';
+                });
+        });
+
+        function switchTab(tabName) {
+            // Remove active classes
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+
+            // Set active
+            event.target.classList.add('active');
+            document.getElementById(`${tabName}-panel`).classList.add('active');
+        }
+
+        function initializeDashboard() {
+            // 1. Populating stats card values
+            const nStudents = Object.keys(appData.learning_paths).length;
+            document.getElementById('stat-total-students').innerText = nStudents;
+            document.getElementById('stat-groups').innerText = appData.groups.length;
+            
+            const nClusters = appData.cluster_profile.length;
+            document.getElementById('stat-clusters').innerText = `K = ${nClusters}`;
+
+            // Calculate Avg System Mastery
+            let totalMastery = 0;
+            let count = 0;
+            appData.cluster_profile.forEach(cluster => {
+                Object.values(cluster.scores).forEach(score => {
+                    totalMastery += score;
+                    count++;
+                });
+            });
+            const avgMastery = Math.round((totalMastery / count) * 100);
+            document.getElementById('stat-avg-mastery').innerText = `${avgMastery}%`;
+
+            // 2. Render Cluster Distribution Table
+            const clusterDistTbody = document.getElementById('cluster-dist-tbody');
+            clusterDistTbody.innerHTML = '';
+            
+            // Calculate cluster sizes
+            const clusterSizes = {};
+            Object.values(appData.cluster_labels).forEach(cid => {
+                clusterSizes[cid] = (clusterSizes[cid] || 0) + 1;
+            });
+
+            appData.cluster_profile.forEach(profile => {
+                const cid = profile.cluster_id;
+                const label = profile.cluster_label;
+                const size = clusterSizes[cid] || 0;
+                
+                // Calculate average P(Ln) for this cluster
+                const scoresList = Object.values(profile.scores);
+                const avgMasteryScore = (scoresList.reduce((a,b)=>a+b, 0) / scoresList.length).toFixed(3);
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <span class="status-badge status-${getClusterBadgeClass(label)}">${label}</span>
+                    </td>
+                    <td style="font-weight: 600;">${size} students</td>
+                    <td style="color: #a5b4fc; font-weight: 600;">${Math.round(avgMasteryScore * 100)}%</td>
+                `;
+                clusterDistTbody.appendChild(tr);
+            });
+
+            // 3. Render Chart.js Multi-Bar Chart
+            renderClusterProfileChart();
+
+            // 4. Render Study Groups
+            renderStudyGroups();
+
+            // 5. Populate Student Picker Dropdown
+            const studentSelect = document.getElementById('student-select');
+            studentSelect.innerHTML = '';
+            
+            // Sort student keys alphabetically by name
+            const sortedNims = Object.keys(appData.learning_paths).sort((a,b) => {
+                return appData.learning_paths[a].nama.localeCompare(appData.learning_paths[b].nama);
+            });
+
+            sortedNims.forEach(nim => {
+                const opt = document.createElement('option');
+                opt.value = nim;
+                opt.text = `${appData.learning_paths[nim].nama} (${nim})`;
+                studentSelect.appendChild(opt);
+            });
+
+            // Load first student by default
+            if(sortedNims.length > 0) {
+                studentSelect.value = sortedNims[0];
+                loadStudentPath();
+            }
+        }
+
+        function getClusterBadgeClass(label) {
+            const l = label.toLowerCase();
+            if (l.includes('mahir')) return 'mahir';
+            if (l.includes('cukup')) return 'cukup';
+            return 'remedial';
+        }
+
+        function renderClusterProfileChart() {
+            const ctx = document.getElementById('profileChart').getContext('2d');
+            
+            // Extract topics list (columns of mastery profiles)
+            const firstCluster = appData.cluster_profile[0];
+            const topics = Object.keys(firstCluster.scores);
+            
+            // Define dataset colors matching our design palette
+            const colorPalettes = [
+                { border: '#10b981', background: 'rgba(16, 185, 129, 0.2)' }, // Green (Mahir)
+                { border: '#f59e0b', background: 'rgba(245, 158, 11, 0.2)' }, // Yellow (Cukup)
+                { border: '#ef4444', background: 'rgba(239, 68, 68, 0.2)' }  // Red (Remedial)
+            ];
+
+            const datasets = appData.cluster_profile.map((profile, index) => {
+                const label = profile.cluster_label;
+                const scores = topics.map(t => profile.scores[t]);
+                const colors = colorPalettes[index % colorPalettes.length];
+                
+                return {
+                    label: label,
+                    data: scores,
+                    borderColor: colors.border,
+                    backgroundColor: colors.background,
+                    borderWidth: 2,
+                    borderRadius: 4,
+                    barPercentage: 0.8,
+                    categoryPercentage: 0.8
+                };
+            });
+
+            if (profileChartInstance) {
+                profileChartInstance.destroy();
+            }
+
+            profileChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: topics,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#f3f4f6',
+                                font: { family: 'Plus Jakarta Sans', size: 12, weight: '600' }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${Math.round(context.raw * 100)}% mastery`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#9ca3af', font: { family: 'Plus Jakarta Sans', size: 11 } },
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                        },
+                        y: {
+                            min: 0,
+                            max: 1.0,
+                            ticks: {
+                                color: '#9ca3af',
+                                font: { family: 'Plus Jakarta Sans', size: 11 },
+                                callback: function(value) { return (value * 100) + '%'; }
+                            },
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderStudyGroups() {
+            const container = document.getElementById('groups-container');
+            container.innerHTML = '';
+
+            appData.groups.forEach(group => {
+                const card = document.createElement('div');
+                card.className = 'group-card';
+
+                // Sort members by avg mastery descending
+                const sortedMembers = [...group.anggota].sort((a,b) => b.avg_mastery - a.avg_mastery);
+
+                let membersHtml = '';
+                sortedMembers.forEach((m, idx) => {
+                    const mentorLabel = idx === 0 ? '<span style="font-size: 0.7rem; font-weight: 700; background: rgba(99,102,241,0.2); color:#a5b4fc; padding: 0.1rem 0.4rem; border-radius: 0.25rem; margin-left: 0.5rem;">PEER TUTOR</span>' : '';
+                    membersHtml += `
+                        <div class="member-item">
+                            <div class="member-info">
+                                <span class="member-name">${m.nama}${mentorLabel}</span>
+                                <span class="member-nim">NIM: ${m.nim}</span>
+                            </div>
+                            <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem;">
+                                <span class="status-badge status-${getClusterBadgeClass(m.cluster_label)}">${m.cluster_label}</span>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600;">P(L) = ${Math.round(m.avg_mastery*100)}%</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="group-header">
+                        <span class="group-title">Study Group ${group.kelompok_id}</span>
+                        <span class="status-badge" style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2); color:#a5b4fc; font-weight:700;">
+                            Diversity: ${group.heterogeneity_score}
+                        </span>
+                    </div>
+                    <div class="group-members">
+                        ${membersHtml}
+                    </div>
+                    <div class="group-reasoning">
+                        ${group.reasoning}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function loadStudentPath() {
+            const nim = document.getElementById('student-select').value;
+            const studentData = appData.learning_paths[nim];
+            
+            // Get student cluster label
+            const cId = appData.cluster_labels[nim];
+            const clusterInfo = appData.cluster_profile.find(p => p.cluster_id === cId);
+            const clusterLabel = clusterInfo ? clusterInfo.cluster_label : "Umum";
+
+            // 1. Populate Profile Summary Card (Left)
+            const profileCard = document.getElementById('student-profile-card');
+            
+            // Calculate overall mastery
+            const scoresList = studentData.path.map(p => p.p_ln);
+            const overallMastery = Math.round((scoresList.reduce((a,b)=>a+b, 0) / scoresList.length) * 100);
+
+            profileCard.innerHTML = `
+                <h2 style="margin-bottom: 1.5rem;">Student Profile</h2>
+                <div style="display: flex; flex-direction: column; gap: 1rem; align-items: center; text-align: center; margin-bottom: 2rem;">
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--primary-gradient); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; color: white; margin-bottom: 0.5rem;">
+                        ${studentData.nama.charAt(0)}
+                    </div>
+                    <div>
+                        <div style="font-size: 1.25rem; font-weight: 700;">${studentData.nama}</div>
+                        <div style="color: var(--text-secondary); font-size: 0.85rem;">NIM: ${studentData.nim}</div>
+                    </div>
+                    <span class="status-badge status-${getClusterBadgeClass(clusterLabel)}" style="margin-top: 0.5rem; font-size: 0.85rem; padding: 0.4rem 1rem;">
+                        Competency: ${clusterLabel}
+                    </span>
+                </div>
+                
+                <div style="border-top: 1px solid var(--surface-border); padding-top: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="font-size: 0.85rem; color: var(--text-secondary);">Estimated Concept Mastery:</span>
+                        <span style="font-size: 0.85rem; font-weight: 700; color: #a5b4fc;">${overallMastery}%</span>
+                    </div>
+                    <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 999px; overflow: hidden;">
+                        <div style="width: ${overallMastery}%; height: 100%; background: var(--primary-gradient); border-radius: 999px;"></div>
+                    </div>
+                </div>
+            `;
+
+            // 2. Populate recommended Timeline Learning Path (Right)
+            const timelineContainer = document.getElementById('path-timeline-container');
+            timelineContainer.innerHTML = '';
+
+            studentData.path.forEach((step, index) => {
+                const stepDiv = document.createElement('div');
+                stepDiv.className = `path-step ${index === 0 ? 'active-step' : ''}`;
+                
+                let statusClass = 'remedial';
+                if (step.status.includes('✓')) statusClass = 'mahir';
+                else if (step.status.includes('Penguatan')) statusClass = 'cukup';
+
+                stepDiv.innerHTML = `
+                    <div class="step-header">
+                        <span class="step-title">${step.materi}</span>
+                        <span class="step-priority">Priority #${step.prioritas}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem;">
+                        <span class="step-score">Probability of Mastery: <strong style="color: #f3f4f6;">${Math.round(step.p_ln * 100)}%</strong></span>
+                        <span class="status-badge status-${statusClass}">${step.status}</span>
+                    </div>
+                `;
+                timelineContainer.appendChild(stepDiv);
+            });
+        }
+    </script>
+</body>
+</html>
