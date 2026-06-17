@@ -1,5 +1,7 @@
 # app/grouping_engine.py
 
+# ALGORITMA GREEDY
+
 import numpy as np
 from typing import List, Dict, Tuple
 from collections import defaultdict
