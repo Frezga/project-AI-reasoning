@@ -4,15 +4,15 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 
-# Set seed for reproducibility
+# Atur seed untuk reproduksibilitas
 np.random.seed(42)
 
-# Define directories
+# Definisikan direktori
 BASE_DIR = Path(__file__).parent.parent
 DATASET_DIR = BASE_DIR / "dataset"
 DATASET_DIR.mkdir(exist_ok=True)
 
-# 1. Generate mahasiswa.csv (40 Students)
+# 1. Hasilkan mahasiswa.csv (40 Mahasiswa)
 nama_depan = ["Andi", "Budi", "Citra", "Dian", "Eko", "Farah", "Gilang", "Hana", "Irfan", "Joko",
               "Kiki", "Lukman", "Maya", "Nanda", "Oscar", "Putri", "Qori", "Rafi", "Sari", "Taufik",
               "Ulfa", "Vino", "Wulan", "Xander", "Yuni", "Zaki", "Arini", "Bagus", "Clara", "Doni",
@@ -34,7 +34,7 @@ df_mahasiswa = pd.DataFrame(mahasiswa_rows)
 df_mahasiswa.to_csv(DATASET_DIR / "mahasiswa.csv", index=False)
 print("mahasiswa.csv generated successfully.")
 
-# 2. Generate kuis_struktur.csv (60 Questions across 6 OS topics)
+# 2. Hasilkan kuis_struktur.csv (60 Soal di 6 topik OS)
 materi_topics = [
     ("Manajemen Proses", ["Konsep Proses", "Thread dan Konkurensi", "Sinkronisasi", "Deadlock"]),
     ("Penjadwalan CPU", ["Konsep Penjadwalan", "Algoritma FCFS dan SJF", "Round Robin dan Priority", "Multilevel Queue"]),
@@ -47,7 +47,7 @@ materi_topics = [
 kuis_rows = []
 soal_counter = 1
 
-# We will pre-define options and keys for each question to make it simple
+# mendefinisikan jawaban
 options_pool = [
     ("Program yang sedang dieksekusi", "File yang tersimpan di disk", "Instruksi dalam memori ROM", "Unit penyimpanan data", "A"),
     ("Ready -> Running -> Blocked", "New -> Ready -> Running -> Waiting -> Terminated", "Running -> Ready -> New", "Blocked -> Running -> Terminated", "B"),
@@ -62,14 +62,14 @@ options_pool = [
 ]
 
 for topic_name, subtopics in materi_topics:
-    # 10 questions per topic
+    # 10 soal per topik
     for j in range(10):
         soal_id = f"Q{str(soal_counter).zfill(3)}"
         subtopic = subtopics[j % len(subtopics)]
-        # Weights range from 1 to 3
+        # Bobot berkisar dari 1 sampai 3
         bobot = 1 if j < 4 else (2 if j < 8 else 3)
         
-        # Pick options from options pool or make a dummy one
+        # Pilih opsi dari kumpulan opsi atau buat opsi dummy
         pool_idx = (soal_counter - 1) % len(options_pool)
         opt_a, opt_b, opt_c, opt_d, kunci = options_pool[pool_idx]
         
@@ -90,9 +90,9 @@ df_kuis = pd.DataFrame(kuis_rows)
 df_kuis.to_csv(DATASET_DIR / "kuis_struktur.csv", index=False)
 print("kuis_struktur.csv generated successfully.")
 
-# 3. Generate mahasiswa_log_jawaban.csv (Quiz Logs for 40 students * 60 questions = 2400 rows)
-# Define profiles for students
-# We want: 10 Mahir (high mastery), 20 Cukup (medium mastery), 10 Remedial (low mastery)
+# 3. Hasilkan mahasiswa_log_jawaban.csv (Log Kuis untuk 40 mahasiswa * 60 soal = 2400 baris)
+# Definisikan profil untuk mahasiswa
+# Kita ingin: 10 Mahir (penguasaan tinggi), 20 Cukup (penguasaan sedang), 10 Remedial (penguasaan rendah)
 profiles = {}
 for idx, row in df_mahasiswa.iterrows():
     nim = row["NIM"]
@@ -103,14 +103,14 @@ for idx, row in df_mahasiswa.iterrows():
     else:
         profiles[nim] = "remedial"
 
-# Add some specific strengths and weaknesses to make clusters more interesting
-# e.g., student 2301015 (cukup) might be very good at "Manajemen Proses" but weak at "Virtual Memory"
+# Tambahkan beberapa kekuatan dan kelemahan spesifik agar klaster lebih menarik
+# Contoh: mahasiswa 2301015 (cukup) mungkin sangat baik di "Manajemen Proses" tetapi lemah di "Virtual Memory"
 accuracy_modifiers = {}
 for idx, row in df_mahasiswa.iterrows():
     nim = row["NIM"]
     accuracy_modifiers[nim] = {}
     if profiles[nim] == "cukup":
-        # Introduce variation: some are good at Process/Scheduling, others at Memory/VM, others at FS/IO
+        # Masukkan variasi: beberapa baik di Proses/Penjadwalan, yang lain di Memori/VM, yang lain di FS/IO
         if idx % 3 == 0:
             accuracy_modifiers[nim] = {"Manajemen Proses": 0.25, "Penjadwalan CPU": 0.25, "Virtual Memory": -0.25}
         elif idx % 3 == 1:
@@ -130,20 +130,20 @@ for idx, row in df_mahasiswa.iterrows():
     profile = profiles[nim]
     base_acc = base_accuracies[profile]
     
-    # We will generate answers for all 60 questions
+    # Kita akan menghasilkan jawaban untuk semua 60 soal
     for _, kuis_row in df_kuis.iterrows():
         soal_id = kuis_row["ID_Soal"]
         materi = kuis_row["Materi"]
         kunci = kuis_row["Kunci"]
         
-        # Calculate final probability of answering correctly
+        # Hitung probabilitas akhir menjawab dengan benar
         acc = base_acc + accuracy_modifiers[nim].get(materi, 0.0)
-        # Clamp between 0.05 and 0.95
+        # Batasi antara 0.05 dan 0.95
         acc = max(0.05, min(0.95, acc))
         
         is_correct = np.random.random() < acc
         
-        # Determine answer
+        # Tentukan jawaban
         opsi_lain = [o for o in ["A", "B", "C", "D"] if o != kunci]
         if is_correct:
             jawaban = kunci
