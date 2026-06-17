@@ -127,7 +127,7 @@ if __name__ == "__main__":
     print("\n" + "="*70)
     print("BAYESIAN KNOWLEDGE TRACING (BKT)")
     print("="*70)
-    print("BKT melacak tingkat pemahaman konsep mahasiswa secara real-time.")
+    print("BKT melacak tingkat pemahaman konsep pada mahasiswa")
     
     df_kuis = pd.read_csv(kuis_csv)
     df_log = pd.read_csv(log_csv).merge(df_kuis[['ID_Soal', 'Materi']], on='ID_Soal')
