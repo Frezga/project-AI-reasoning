@@ -18,9 +18,9 @@ class ClusteringEngine:
     
     def build_feature_matrix(self, bkt_engine, nim_list: list, materi_list: list) -> np.ndarray:
         """
-        Membangun feature matrix X dari BKT mastery vectors.
+        Membangun matriks fitur (feature matrix) X dari vektor penguasaan (mastery vector) BKT.
         
-        Returns:
+        Mengembalikan:
             X: ndarray shape (n_mahasiswa, n_materi)
         """
         self.nim_list = nim_list
@@ -37,7 +37,7 @@ class ClusteringEngine:
         """
         Menentukan K optimal menggunakan Elbow Method + Silhouette Score.
         
-        Strategy: Gabungkan kedua metrik untuk keputusan yang lebih robust.
+        Strategi: Gabungkan kedua metrik untuk keputusan yang lebih tangguh (robust).
         - Elbow Method: Cari 'siku' pada kurva inertia (WCSS)
         - Silhouette Score: Pilih K dengan skor tertinggi (semakin tinggi = lebih baik)
         """
@@ -84,7 +84,7 @@ class ClusteringEngine:
     
     def fit(self, X: np.ndarray, k: int = None) -> np.ndarray:
         """
-        Fit K-Means dan return label cluster tiap mahasiswa.
+        Melatih K-Means dan mengembalikan label klaster tiap mahasiswa.
         """
         if k is None:
             k = self.optimal_k or self.find_optimal_k(X)
@@ -97,10 +97,10 @@ class ClusteringEngine:
     def get_cluster_profile(self, X: np.ndarray, labels: np.ndarray, 
                             materi_list: list) -> pd.DataFrame:
         """
-        Menghitung centroid tiap cluster untuk interpretasi profil.
+        Menghitung centroid tiap klaster untuk interpretasi profil.
         
-        Returns:
-            DataFrame: rata-rata P(Ln) per materi per cluster
+        Mengembalikan:
+            DataFrame: rata-rata P(Ln) per materi per klaster
         """
         df = pd.DataFrame(X, columns=materi_list)
         df['cluster'] = labels

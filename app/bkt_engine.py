@@ -6,10 +6,10 @@ from typing import List, Dict
 @dataclass
 class BKTParams:
     """Parameter BKT per materi/submateri."""
-    p_l0: float = 0.20   # Prior knowledge
-    p_t:  float = 0.15   # Transition (learn rate)
-    p_g:  float = 0.20   # Guess probability
-    p_s:  float = 0.10   # Slip probability
+    p_l0: float = 0.20   # Pengetahuan awal (prior knowledge)
+    p_t:  float = 0.15   # Transisi / tingkat pembelajaran (learn rate)
+    p_g:  float = 0.20   # Probabilitas menebak (guess probability)
+    p_s:  float = 0.10   # Probabilitas kesalahan (slip probability)
 
 @dataclass
 class BKTState:
@@ -99,7 +99,7 @@ class BKTEngine:
     def get_mastery_vector(self, nim: str) -> Dict[str, float]:
         """
         Mengembalikan vektor penguasaan {materi: P(Ln)} untuk satu mahasiswa.
-        Ini yang akan menjadi feature vector untuk K-Means.
+        Ini yang akan menjadi vektor fitur (feature vector) untuk K-Means.
         """
         nim = str(nim)
         if nim not in self.student_states:
@@ -114,8 +114,8 @@ class BKTEngine:
         Menghasilkan Learning Path personal berdasarkan P(Ln).
         Urutan: Materi dengan P(Ln) TERENDAH diprioritaskan.
         
-        Returns:
-            List of dict: [{'materi': ..., 'p_ln': ..., 'status': ..., 'prioritas': ...}]
+        Mengembalikan:
+            List of dict: [{'materi': ..., 'p_ln': ..., 'status': ...}]
         """
         nim = str(nim)
         mastery = self.get_mastery_vector(nim)
@@ -125,7 +125,7 @@ class BKTEngine:
             p_ln = mastery.get(materi, self._get_params(materi).p_l0)
             
             if p_ln >= self.MASTERY_THRESHOLD:
-                status = "Dikuasai ✓"
+                status = "Dikuasai"
             elif p_ln >= 0.50:
                 status = "Perlu Penguatan"
             else:

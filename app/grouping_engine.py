@@ -16,17 +16,17 @@ class GroupingEngine:
                     cluster_semantic: Dict[int, str],
                     materi_list: List[str]) -> List[Dict]:
         """
-        Greedy algorithm untuk membentuk kelompok heterogen.
+        Algoritma Greedy untuk membentuk kelompok heterogen.
         
-        Strategy:
-        1. Sort mahasiswa berdasarkan cluster (urutan: Mahir, Cukup, Remedial)
-        2. Gunakan Round-Robin Greedy: ambil satu mahasiswa dari tiap cluster
+        Strategi:
+        1. Urutkan mahasiswa berdasarkan klaster (urutan: Mahir, Cukup, Remedial)
+        2. Gunakan Round-Robin Greedy: ambil satu mahasiswa dari tiap klaster
            secara bergiliran sampai kelompok penuh.
         3. Sisa mahasiswa (jika N tidak habis dibagi group_size) 
            didistribusikan ke kelompok yang paling heterogen.
         
-        Returns:
-            List of group dictionaries dengan informasi lengkap + reasoning
+        Mengembalikan:
+            List of group dictionaries dengan informasi lengkap + reasoning (alasan pembentukan)
         """
         n = len(nim_list)
         
@@ -64,7 +64,7 @@ class GroupingEngine:
                 
                 # Temukan mahasiswa berikutnya yang belum di-assign
                 while ptr < len(bucket) and bucket[ptr] in assigned:
-                    ptr += 1
+                     ptr += 1
                 cluster_pointers[c_id] = ptr
                 
                 if ptr < len(bucket):
@@ -119,8 +119,8 @@ class GroupingEngine:
     
     def _calc_heterogeneity(self, members: List[Dict]) -> float:
         """
-        Heterogeneity = proporsi cluster unik dalam kelompok.
-        Score = 1.0 berarti semua anggota dari cluster berbeda (ideal).
+        Heterogenitas = proporsi klaster unik dalam kelompok.
+        Skor = 1.0 berarti semua anggota berasal dari klaster berbeda (ideal).
         """
         clusters = [m['cluster_id'] for m in members]
         unique_ratio = len(set(clusters)) / len(clusters)
@@ -128,12 +128,12 @@ class GroupingEngine:
     
     def _generate_reasoning(self, members: List[Dict], materi_list: List[str]) -> str:
         """
-        Menghasilkan string reasoning mengapa kelompok ini dibentuk.
+        Menghasilkan string alasan (reasoning) mengapa kelompok ini dibentuk.
         
-        Logic:
+        Logika:
         1. Identifikasi siapa "mentor" (mahir) dan siapa yang butuh bantuan
         2. Identifikasi keunggulan spesifik tiap anggota pada materi tertentu
-        3. Format reasoning sebagai narasi yang readable
+        3. Format alasan (reasoning) sebagai narasi yang mudah dibaca (readable)
         """
         reasons = []
         
@@ -150,7 +150,7 @@ class GroupingEngine:
         )
         
         reasons.append(
-            f"{top['nim']} ({top['cluster_label']}, avg mastery={top['avg_mastery']:.1%}) "
+            f"{top['nim']} ({top['cluster_label']}, rata-rata penguasaan={top['avg_mastery']:.1%}) "
             f"berperan sebagai peer-mentor untuk anggota lain."
         )
         

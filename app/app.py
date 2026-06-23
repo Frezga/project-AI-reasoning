@@ -3,7 +3,7 @@ import pandas as pd
 import sys
 import os
 
-# Add directory paths to system path to import modules correctly
+# Tambahkan path direktori ke system path agar modul dapat diimpor dengan benar
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -15,7 +15,7 @@ except ImportError:
 
 app = Flask(__name__)
 
-# Paths to CSV
+# Path ke CSV
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MAHASISWA_CSV = os.path.join(BASE_DIR, "dataset", "mahasiswa.csv")
 KUIS_CSV = os.path.join(BASE_DIR, "dataset", "kuis_struktur.csv")
@@ -28,17 +28,17 @@ def index():
 @app.route("/api/results")
 def get_results():
     if not (os.path.exists(MAHASISWA_CSV) and os.path.exists(KUIS_CSV) and os.path.exists(LOG_CSV)):
-        return jsonify({"error": "Dataset files are missing. Please run scripts/generate_dummy_data.py first."}), 400
+        return jsonify({"error": "File dataset tidak ditemukan. Silakan jalankan scripts/generate_dummy_data.py terlebih dahulu."}), 400
     
     try:
-        # Load mahasiswa name mapping
+        # Muat pemetaan nama mahasiswa
         df_mhs = pd.read_csv(MAHASISWA_CSV)
         mhs_map = dict(zip(df_mhs['NIM'].astype(str), df_mhs['Nama']))
         
-        # Run pipeline
+        # Jalankan pipeline
         results = run_pipeline(MAHASISWA_CSV, KUIS_CSV, LOG_CSV, group_size=4)
         
-        # Enrich groups with student names
+        # Perkaya kelompok dengan nama mahasiswa
         enriched_groups = []
         for group in results['groups']:
             enriched_members = []
@@ -53,7 +53,7 @@ def get_results():
                 'anggota': enriched_members
             })
             
-        # Enrich learning paths with names
+        # Perkaya learning path dengan nama
         enriched_learning_paths = {}
         for nim, path in results['learning_paths'].items():
             nim_str = str(nim)
@@ -63,10 +63,10 @@ def get_results():
                 'path': path
             }
             
-        # Convert cluster profile (pandas DataFrame) to JSON-serializable format
+        # Konversi profil klaster (pandas DataFrame) ke format yang dapat diserialisasi ke JSON
         profile_df = results['cluster_profile'].reset_index()
         
-        # Find semantic labels by scanning enriched groups
+        # Cari label semantik dengan memindai kelompok yang telah diperkaya
         cluster_semantic = {}
         for g in enriched_groups:
             for m in g['anggota']:
