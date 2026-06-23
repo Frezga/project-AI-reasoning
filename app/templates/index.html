@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rekomendasi Learning Path & Kelompok Belajar Adaptif</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Chart.js untuk visualisasi data -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Dashboard Header -->
+      <header>
+        <div class="header-title">
+          <h1>Rekomendasi Learning Path & Kelompok Belajar Adaptif</h1>
+          <p>Mata Kuliah : Kecerdasan Buatan</p>
+        </div>
+      </header>
+
+      <!-- Tab Controls -->
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('overview')">
+          Ringkasan Dosen
+        </button>
+        <button class="tab-btn" onclick="switchTab('groups')">
+          Kelompok Belajar
+        </button>
+        <button class="tab-btn" onclick="switchTab('learning')">
+          Learning Path Mahasiswa
+        </button>
+      </div>
+
+      <!-- STATUS MEMUAT -->
+      <div id="loader" class="loader">
+        <div class="spinner"></div>
+        <p style="color: var(--text-secondary)">Memproses data...</p>
+      </div>
+
+      <!-- STATUS ERROR -->
+      <div id="error" class="error-message" style="display: none"></div>
+
+      <!-- KONTEN UTAMA DASHBOARD -->
+      <div id="dashboard-content" style="display: none">
+        <!-- PANEL 1: RINGKASAN -->
+        <div id="overview-panel" class="panel active">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="label">Total Mahasiswa</div>
+              <div class="value" id="stat-total-students">0</div>
+              <div class="desc">Dimuat dari mahasiswa.csv</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Klaster Kompetensi</div>
+              <div class="value" id="stat-clusters">K = 0</div>
+              <div class="desc">Ditentukan otomatis via K-Means Elbow</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Rerata Penguasaan</div>
+              <div class="value" id="stat-avg-mastery">0%</div>
+              <div class="desc">Rata-rata P(Ln) seluruh mahasiswa</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Kelompok Terbentuk</div>
+              <div class="value" id="stat-groups">0</div>
+              <div class="desc">Kelompok heterogen via Greedy</div>
+            </div>
+          </div>
+
+          <div class="dashboard-content-grid">
+            <div class="glass-panel">
+              <h2>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  style="color: #6366f1"
+                >
+                  <path d="M3 3v18h18" />
+                  <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3" />
+                </svg>
+                Profil Centroid Klaster Kompetensi
+              </h2>
+              <div style="height: 350px; position: relative">
+                <canvas id="profileChart"></canvas>
+              </div>
+            </div>
+
+            <div class="glass-panel">
+              <h2>Distribusi Klaster</h2>
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Nama Klaster</th>
+                      <th>Jumlah</th>
+                      <th>Rerata P(Ln)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cluster-dist-tbody">
+                    <!-- Diisi secara dinamis -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL 2: KELOMPOK BELAJAR -->
+        <div id="groups-panel" class="panel">
+          <div class="groups-grid" id="groups-container">
+            <!-- Diisi secara dinamis -->
+          </div>
+        </div>
+
+        <!-- PANEL 3: LEARNING PATH PERSONAL -->
+        <div id="learning-panel" class="panel">
+          <div class="student-picker-container">
+            <label
+              for="student-select"
+              style="font-weight: 600; color: var(--text-primary)"
+              >Pilih Mahasiswa:</label
+            >
+            <select
+              id="student-select"
+              class="student-select"
+              onchange="loadStudentPath()"
+            >
+              <!-- Diisi secara dinamis -->
+            </select>
+          </div>
+
+          <div class="learning-path-grid">
+            <!-- Kiri: Kartu Ringkasan Profil -->
+            <div class="glass-panel" id="student-profile-card">
+              <!-- Diisi secara dinamis -->
+            </div>
+
+            <!-- Kanan: Timeline Learning Path -->
+            <div class="glass-panel">
+              <h2 style="margin-bottom: 2rem">
+                Rekomendasi Learning Path Materi Pembelajaran
+              </h2>
+              <div class="path-timeline" id="path-timeline-container">
+                <!-- Diisi secara dinamis -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+  </body>
+</html>
