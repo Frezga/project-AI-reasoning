@@ -201,7 +201,10 @@
                   </div>
                   <div class="file-info" style="display: none;">
                     <span class="file-name">filename.csv</span>
-                    <span class="file-status status-badge">Belum divalidasi</span>
+                    <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: center; width: 100%;">
+                      <span class="file-status status-badge">Belum divalidasi</span>
+                      <button class="btn-remove-file" type="button" title="Hapus file">&times;</button>
+                    </div>
                   </div>
                 </div>
                 <div class="parameter-info">
@@ -229,7 +232,10 @@
                   </div>
                   <div class="file-info" style="display: none;">
                     <span class="file-name">filename.csv</span>
-                    <span class="file-status status-badge">Belum divalidasi</span>
+                    <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: center; width: 100%;">
+                      <span class="file-status status-badge">Belum divalidasi</span>
+                      <button class="btn-remove-file" type="button" title="Hapus file">&times;</button>
+                    </div>
                   </div>
                 </div>
                 <div class="parameter-info">
@@ -257,12 +263,18 @@
                   </div>
                   <div class="file-info" style="display: none;">
                     <span class="file-name">filename.csv</span>
-                    <span class="file-status status-badge">Belum divalidasi</span>
+                    <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: center; width: 100%;">
+                      <span class="file-status status-badge">Belum divalidasi</span>
+                      <button class="btn-remove-file" type="button" title="Hapus file">&times;</button>
+                    </div>
                   </div>
                 </div>
                 <div class="parameter-info">
                   <h4>Kolom Wajib:</h4>
                   <code>NIM</code>, <code>ID_Soal</code>, <code>Jawaban_Mahasiswa</code>, <code>Skor_Biner</code>
+                  <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem; line-height: 1.4;">
+                    * <strong>Skor_Biner</strong> bernilai <code>0</code> (salah) atau <code>1</code> (benar) untuk merepresentasikan status jawaban.
+                  </p>
                 </div>
               </div>
             </div>

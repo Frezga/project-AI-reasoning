@@ -405,6 +405,15 @@ function initUploadHandlers() {
         handleFileSelection(key, e.dataTransfer.files[0]);
       }
     });
+
+    // Event click untuk tombol X (hapus file)
+    const removeBtn = dropzone.querySelector('.btn-remove-file');
+    if (removeBtn) {
+      removeBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // mencegah membuka file dialog
+        clearFileSelection(key);
+      });
+    }
   });
 }
 
@@ -434,7 +443,7 @@ function handleFileSelection(key, file) {
 
   if (extension === 'xlsx' || extension === 'xls') {
     // File excel divalidasi langsung di server
-    showFileStatus(dropzone, filePrompt, fileInfo, fileNameSpan, fileStatusSpan, file.name, "Format Excel (Validasi di server)", "info");
+    showFileStatus(dropzone, filePrompt, fileInfo, fileNameSpan, fileStatusSpan, file.name, "Format Excel", "info");
     uploadedFiles[key] = file;
     fileValidationStatus[key] = true;
     updateProcessButtonState();
@@ -644,6 +653,21 @@ function resetUploadFormStates() {
 
   const msgBox = document.getElementById('upload-message');
   msgBox.style.display = 'none';
+}
+
+function clearFileSelection(key) {
+  uploadedFiles[key] = null;
+  fileValidationStatus[key] = false;
+  updateProcessButtonState();
+
+  const dropzone = document.getElementById(`dropzone-${key}`);
+  const prompt = dropzone.querySelector('.dropzone-prompt');
+  const info = dropzone.querySelector('.file-info');
+  const input = document.getElementById(`file-${key}`);
+  
+  input.value = "";
+  prompt.style.display = 'block';
+  info.style.display = 'none';
 }
 
 function showUploadMessage(msg, type) {
