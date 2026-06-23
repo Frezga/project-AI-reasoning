@@ -39,6 +39,9 @@
         <button class="tab-btn" onclick="switchTab('learning')">
           Learning Path Mahasiswa
         </button>
+        <button class="tab-btn" onclick="switchTab('upload')">
+          Unggah Dataset
+        </button>
       </div>
 
       <!-- STATUS MEMUAT -->
@@ -160,6 +163,123 @@
                 <!-- Diisi secara dinamis -->
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- PANEL 4: UNGGAH DATASET -->
+        <div id="upload-panel" class="panel">
+          <div class="glass-panel">
+            <h2>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #6366f1">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              Unggah Dataset Baru
+            </h2>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.95rem;">
+              Perbarui seluruh visualisasi dashboard dengan mengunggah dataset Anda sendiri. Format file yang didukung adalah <strong>CSV (.csv)</strong> dan <strong>Excel (.xlsx, .xls)</strong>. Silakan sesuaikan nama kolom data dengan struktur parameter di bawah ini.
+            </p>
+
+            <div class="upload-grid">
+              <!-- Upload Mahasiswa -->
+              <div class="upload-card" id="card-mahasiswa">
+                <div class="upload-card-header">
+                  <div class="upload-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                  </div>
+                  <div class="upload-card-title">
+                    <h3>Data Mahasiswa</h3>
+                    <span class="file-spec">mahasiswa.csv / .xlsx</span>
+                  </div>
+                </div>
+                <div class="upload-dropzone" id="dropzone-mahasiswa">
+                  <input type="file" id="file-mahasiswa" accept=".csv, .xlsx, .xls" style="display: none;">
+                  <div class="dropzone-prompt">
+                    <p>Seret file ke sini atau <strong>pilih file</strong></p>
+                    <span class="dropzone-sub">Maksimal 10MB</span>
+                  </div>
+                  <div class="file-info" style="display: none;">
+                    <span class="file-name">filename.csv</span>
+                    <span class="file-status status-badge">Belum divalidasi</span>
+                  </div>
+                </div>
+                <div class="parameter-info">
+                  <h4>Kolom Wajib:</h4>
+                  <code>NIM</code>, <code>Nama</code>
+                </div>
+              </div>
+
+              <!-- Upload Kuis Struktur -->
+              <div class="upload-card" id="card-kuis">
+                <div class="upload-card-header">
+                  <div class="upload-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
+                  </div>
+                  <div class="upload-card-title">
+                    <h3>Struktur Kuis</h3>
+                    <span class="file-spec">kuis_struktur.csv / .xlsx</span>
+                  </div>
+                </div>
+                <div class="upload-dropzone" id="dropzone-kuis">
+                  <input type="file" id="file-kuis" accept=".csv, .xlsx, .xls" style="display: none;">
+                  <div class="dropzone-prompt">
+                    <p>Seret file ke sini atau <strong>pilih file</strong></p>
+                    <span class="dropzone-sub">Maksimal 10MB</span>
+                  </div>
+                  <div class="file-info" style="display: none;">
+                    <span class="file-name">filename.csv</span>
+                    <span class="file-status status-badge">Belum divalidasi</span>
+                  </div>
+                </div>
+                <div class="parameter-info">
+                  <h4>Kolom Wajib:</h4>
+                  <code>ID_Soal</code>, <code>Materi</code>, <code>Submateri</code>, <code>Bobot</code>, <code>Opsi_A</code>, <code>Opsi_B</code>, <code>Opsi_C</code>, <code>Opsi_D</code>, <code>Kunci</code>
+                </div>
+              </div>
+
+              <!-- Upload Log Jawaban -->
+              <div class="upload-card" id="card-log">
+                <div class="upload-card-header">
+                  <div class="upload-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
+                  </div>
+                  <div class="upload-card-title">
+                    <h3>Log Jawaban</h3>
+                    <span class="file-spec">mahasiswa_log_jawaban.csv / .xlsx</span>
+                  </div>
+                </div>
+                <div class="upload-dropzone" id="dropzone-log">
+                  <input type="file" id="file-log" accept=".csv, .xlsx, .xls" style="display: none;">
+                  <div class="dropzone-prompt">
+                    <p>Seret file ke sini atau <strong>pilih file</strong></p>
+                    <span class="dropzone-sub">Maksimal 10MB</span>
+                  </div>
+                  <div class="file-info" style="display: none;">
+                    <span class="file-name">filename.csv</span>
+                    <span class="file-status status-badge">Belum divalidasi</span>
+                  </div>
+                </div>
+                <div class="parameter-info">
+                  <h4>Kolom Wajib:</h4>
+                  <code>NIM</code>, <code>ID_Soal</code>, <code>Jawaban_Mahasiswa</code>, <code>Skor_Biner</code>
+                </div>
+              </div>
+            </div>
+
+            <!-- Upload Action Section -->
+            <div class="upload-actions" style="margin-top: 2rem; display: flex; gap: 1rem; align-items: center;">
+              <button id="btn-process-upload" class="btn-submit" disabled onclick="submitUploadedFiles()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 0.35rem;"><polyline points="20 6 9 17 4 12" /></svg>
+                Proses & Perbarui Dashboard
+              </button>
+              <button id="btn-reset-data" class="btn-reset" onclick="resetToDefaultData()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 0.35rem;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" /></svg>
+                Reset ke Dataset Dummy
+              </button>
+            </div>
+            
+            <div id="upload-message" class="upload-message-box" style="display: none; margin-top: 1.5rem; padding: 1rem; border-radius: 0.5rem;"></div>
           </div>
         </div>
       </div>

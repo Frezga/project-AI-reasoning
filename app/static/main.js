@@ -3,6 +3,8 @@ let appData = null;
 let profileChartInstance = null;
 
 document.addEventListener("DOMContentLoaded", () => {
+  initUploadHandlers();
+
   fetch("/api/results")
     .then((response) => {
       if (!response.ok) {
@@ -36,9 +38,14 @@ function switchTab(tabName) {
     .querySelectorAll(".panel")
     .forEach((p) => p.classList.remove("active"));
 
-  // Atur sebagai aktif
-  event.target.classList.add("active");
-  document.getElementById(`${tabName}-panel`).classList.add("active");
+  // Cari tombol tab berdasarkan tabName dan aktifkan
+  const btn = Array.from(document.querySelectorAll(".tab-btn")).find(b => 
+    b.getAttribute("onclick") && b.getAttribute("onclick").includes(`'${tabName}'`)
+  );
+  if (btn) btn.classList.add("active");
+
+  const panel = document.getElementById(`${tabName}-panel`);
+  if (panel) panel.classList.add("active");
 }
 
 function initializeDashboard() {
@@ -340,3 +347,317 @@ function loadStudentPath() {
     timelineContainer.appendChild(stepDiv);
   });
 }
+
+// ==========================================================================
+// KODE KELOLA UNGGAHAN DATASET (CSV & EXCEL)
+// ==========================================================================
+
+let uploadedFiles = {
+  mahasiswa: null,
+  kuis: null,
+  log: null
+};
+
+let fileValidationStatus = {
+  mahasiswa: false,
+  kuis: false,
+  log: false
+};
+
+function initUploadHandlers() {
+  const uploadKeys = ['mahasiswa', 'kuis', 'log'];
+  
+  uploadKeys.forEach(key => {
+    const dropzone = document.getElementById(`dropzone-${key}`);
+    const input = document.getElementById(`file-${key}`);
+    
+    if (!dropzone || !input) return;
+
+    // Klik dropzone untuk memilih berkas
+    dropzone.addEventListener('click', (e) => {
+      // Pastikan input file diklik, cegah perulangan event click
+      if (e.target !== input) {
+        input.click();
+      }
+    });
+
+    // Perubahan file input
+    input.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        handleFileSelection(key, e.target.files[0]);
+      }
+    });
+
+    // Drag-and-drop events
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.classList.remove('dragover');
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if (e.dataTransfer.files.length > 0) {
+        handleFileSelection(key, e.dataTransfer.files[0]);
+      }
+    });
+  });
+}
+
+function handleFileSelection(key, file) {
+  if (!file) return;
+
+  const dropzone = document.getElementById(`dropzone-${key}`);
+  const filePrompt = dropzone.querySelector('.dropzone-prompt');
+  const fileInfo = dropzone.querySelector('.file-info');
+  const fileNameSpan = fileInfo.querySelector('.file-name');
+  const fileStatusSpan = fileInfo.querySelector('.file-status');
+
+  // Reset status validasi per file terlebih dahulu
+  fileValidationStatus[key] = false;
+  uploadedFiles[key] = null;
+  updateProcessButtonState();
+
+  // Validasi ekstensi
+  const extension = file.name.split('.').pop().toLowerCase();
+  if (extension !== 'csv' && extension !== 'xlsx' && extension !== 'xls') {
+    showFileStatus(dropzone, filePrompt, fileInfo, fileNameSpan, fileStatusSpan, file.name, "Error: Ekstensi file tidak didukung", "remedial");
+    return;
+  }
+
+  // Set nama berkas
+  fileNameSpan.innerText = file.name;
+
+  if (extension === 'xlsx' || extension === 'xls') {
+    // File excel divalidasi langsung di server
+    showFileStatus(dropzone, filePrompt, fileInfo, fileNameSpan, fileStatusSpan, file.name, "Format Excel (Validasi di server)", "info");
+    uploadedFiles[key] = file;
+    fileValidationStatus[key] = true;
+    updateProcessButtonState();
+  } else {
+    // File CSV divalidasi client-side terlebih dahulu
+    validateCSVClientSide(key, file, (isValid, errorMsg) => {
+      if (isValid) {
+        showFileStatus(dropzone, filePrompt, fileInfo, fileNameSpan, fileStatusSpan, file.name, "Format CSV Valid", "mahir");
+        uploadedFiles[key] = file;
+        fileValidationStatus[key] = true;
+      } else {
+        showFileStatus(dropzone, filePrompt, fileInfo, fileNameSpan, fileStatusSpan, file.name, `Error: ${errorMsg}`, "remedial");
+      }
+      updateProcessButtonState();
+    });
+  }
+}
+
+function showFileStatus(dropzone, prompt, info, nameSpan, statusSpan, fileName, statusText, badgeType) {
+  prompt.style.display = 'none';
+  info.style.display = 'flex';
+  nameSpan.innerText = fileName;
+  
+  statusSpan.className = 'file-status status-badge';
+  if (badgeType === 'mahir') {
+    statusSpan.classList.add('status-mahir');
+  } else if (badgeType === 'remedial') {
+    statusSpan.classList.add('status-remedial');
+  } else {
+    statusSpan.classList.add('status-info');
+  }
+  statusSpan.innerText = statusText;
+}
+
+function validateCSVClientSide(key, file, callback) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result;
+    const firstLine = text.split('\n')[0].trim();
+    
+    if (!firstLine) {
+      callback(false, "File CSV kosong");
+      return;
+    }
+
+    // Ekstrak nama kolom
+    const cols = firstLine.split(',').map(c => c.trim().replace(/^["']|["']$/g, ''));
+
+    // Kolom wajib masing-masing tabel
+    let required = [];
+    if (key === 'mahasiswa') {
+      required = ['NIM', 'Nama'];
+    } else if (key === 'kuis') {
+      required = ['ID_Soal', 'Materi', 'Submateri', 'Bobot', 'Opsi_A', 'Opsi_B', 'Opsi_C', 'Opsi_D', 'Kunci'];
+    } else if (key === 'log') {
+      required = ['NIM', 'ID_Soal', 'Jawaban_Mahasiswa', 'Skor_Biner'];
+    }
+
+    const missing = required.filter(col => !cols.includes(col));
+    if (missing.length > 0) {
+      callback(false, `Kolom kurang: ${missing.join(', ')}`);
+    } else {
+      callback(true, null);
+    }
+  };
+
+  reader.onerror = function() {
+    callback(false, "Gagal membaca file");
+  };
+
+  // Hanya baca 2KB pertama dari file CSV (cukup untuk header saja)
+  const slice = file.slice(0, 2048);
+  reader.readAsText(slice);
+}
+
+function updateProcessButtonState() {
+  const btn = document.getElementById('btn-process-upload');
+  if (!btn) return;
+  
+  const allValid = fileValidationStatus.mahasiswa && fileValidationStatus.kuis && fileValidationStatus.log;
+  btn.disabled = !allValid;
+}
+
+function submitUploadedFiles() {
+  const btn = document.getElementById('btn-process-upload');
+  const resetBtn = document.getElementById('btn-reset-data');
+
+  if (!uploadedFiles.mahasiswa || !uploadedFiles.kuis || !uploadedFiles.log) {
+    showUploadMessage("Error: Silakan unggah ketiga berkas terlebih dahulu.", "error");
+    return;
+  }
+
+  btn.disabled = true;
+  resetBtn.disabled = true;
+  showUploadMessage("Sedang mengunggah, memvalidasi relasi data, dan memproses dashboard...", "info");
+
+  const formData = new FormData();
+  formData.append('mahasiswa', uploadedFiles.mahasiswa);
+  formData.append('kuis', uploadedFiles.kuis);
+  formData.append('log', uploadedFiles.log);
+
+  fetch('/api/upload', {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => res.json().then(data => ({ status: res.status, data })))
+  .then(({ status, data }) => {
+    if (status !== 200) {
+      throw new Error(data.error || "Gagal memperbarui dataset");
+    }
+    
+    showUploadMessage(data.message, "success");
+    
+    // Tarik data hasil pipeline yang baru diperbarui
+    return fetch("/api/results");
+  })
+  .then(res => {
+    if (!res.ok) throw new Error("Gagal mengambil data baru");
+    return res.json();
+  })
+  .then(data => {
+    appData = data;
+    initializeDashboard();
+    
+    // Reset status form upload
+    resetUploadFormStates();
+    
+    // Alihkan ke halaman ringkasan dosen setelah 1.5 detik
+    setTimeout(() => {
+      switchTab('overview');
+      btn.disabled = false;
+      resetBtn.disabled = false;
+    }, 1500);
+  })
+  .catch(err => {
+    showUploadMessage(err.message, "error");
+    btn.disabled = false;
+    resetBtn.disabled = false;
+  });
+}
+
+function resetToDefaultData() {
+  const btn = document.getElementById('btn-process-upload');
+  const resetBtn = document.getElementById('btn-reset-data');
+
+  if (!confirm("Apakah Anda yakin ingin mereset seluruh data kembali ke data dummy bawaan?")) {
+    return;
+  }
+
+  btn.disabled = true;
+  resetBtn.disabled = true;
+  showUploadMessage("Sedang mengembalikan data ke bawaan dummy...", "info");
+
+  fetch('/api/reset', {
+    method: 'POST'
+  })
+  .then(res => res.json().then(data => ({ status: res.status, data })))
+  .then(({ status, data }) => {
+    if (status !== 200) {
+      throw new Error(data.error || "Gagal mereset data");
+    }
+    
+    showUploadMessage("Dataset berhasil direset!", "success");
+    
+    // Tarik data dashboard yang baru direset
+    return fetch("/api/results");
+  })
+  .then(res => {
+    if (!res.ok) throw new Error("Gagal mengambil data baru");
+    return res.json();
+  })
+  .then(data => {
+    appData = data;
+    initializeDashboard();
+    
+    resetUploadFormStates();
+    
+    setTimeout(() => {
+      switchTab('overview');
+      btn.disabled = false;
+      resetBtn.disabled = false;
+    }, 1500);
+  })
+  .catch(err => {
+    showUploadMessage(err.message, "error");
+    btn.disabled = false;
+    resetBtn.disabled = false;
+  });
+}
+
+function resetUploadFormStates() {
+  uploadedFiles = { mahasiswa: null, kuis: null, log: null };
+  fileValidationStatus = { mahasiswa: false, kuis: false, log: false };
+  updateProcessButtonState();
+
+  const keys = ['mahasiswa', 'kuis', 'log'];
+  keys.forEach(key => {
+    const dropzone = document.getElementById(`dropzone-${key}`);
+    const prompt = dropzone.querySelector('.dropzone-prompt');
+    const info = dropzone.querySelector('.file-info');
+    const input = document.getElementById(`file-${key}`);
+    
+    input.value = "";
+    prompt.style.display = 'block';
+    info.style.display = 'none';
+  });
+
+  const msgBox = document.getElementById('upload-message');
+  msgBox.style.display = 'none';
+}
+
+function showUploadMessage(msg, type) {
+  const msgBox = document.getElementById('upload-message');
+  msgBox.innerText = msg;
+  msgBox.style.display = 'block';
+  
+  msgBox.className = 'upload-message-box';
+  if (type === 'success') {
+    msgBox.classList.add('upload-msg-success');
+  } else if (type === 'error') {
+    msgBox.classList.add('upload-msg-error');
+  } else {
+    msgBox.classList.add('upload-msg-info');
+  }
+}
+
