@@ -1,8 +1,61 @@
 ID_Soal,Materi,Submateri,Bobot,Opsi_A,Opsi_B,Opsi_C,Opsi_D,Kunci
 Q001,Manajemen Proses,Konsep Proses,1,Program yang sedang dieksekusi,File yang tersimpan di disk,Instruksi dalam memori ROM,Unit penyimpanan data,A
-Q002,Manajemen Proses,Konsep Proses,2,Program yang sedang dieksekusi,File yang tersimpan di disk,Instruksi dalam memori ROM,Unit penyimpanan data,A
-Q003,Manajemen Proses,Konsep Proses,3,Program yang sedang dieksekusi,File yang tersimpan di disk,Instruksi dalam memori ROM,Unit penyimpanan data,A
-Q004,Penjadwalan CPU,Round Robin dan Priority,1,Mutual Exclusion,Progress,Bounded Waiting,Semua benar,D
-Q005,Penjadwalan CPU,Round Robin dan Priority,2,Mutual Exclusion,Progress,Bounded Waiting,Semua benar,D
-Q006,Manajemen Memori,Paging,1,Ready -> Running -> Blocked,New -> Ready -> Running -> Waiting -> Terminated,Running -> Ready -> New,Blocked -> Running -> Terminated,B
-Q007,Manajemen Memori,Paging,2,Ready -> Running -> Blocked,New -> Ready -> Running -> Waiting -> Terminated,Running -> Ready -> New,Blocked -> Running -> Terminated,B
+Q002,Manajemen Proses,Thread dan Konkurensi,1,Ready -> Running -> Blocked,New -> Ready -> Running -> Waiting -> Terminated,Running -> Ready -> New,Blocked -> Running -> Terminated,B
+Q003,Manajemen Proses,Sinkronisasi,1,Process Control Block (PCB),Memory Allocation Table,File Descriptor Table,Interrupt Vector Table,A
+Q004,Manajemen Proses,Deadlock,1,Thread berbagi address space; Process tidak,Process berbagi address space; Thread tidak,Keduanya berbagi address space,Keduanya tidak berbagi address space,A
+Q005,Manajemen Proses,Konsep Proses,2,Race condition,Deadlock,Starvation,Thrashing,A
+Q006,Manajemen Proses,Thread dan Konkurensi,2,Mutex,Semaphore,Monitor,Spinlock,B
+Q007,Manajemen Proses,Sinkronisasi,2,Mutual Exclusion,Progress,Bounded Waiting,Semua benar,D
+Q008,Manajemen Proses,Deadlock,2,wait() dan signal(),lock() dan unlock(),P() dan V() saja,acquire() dan release(),C
+Q009,Manajemen Proses,Konsep Proses,3,Deadlock,Starvation,Livelock,Race Condition,A
+Q010,Manajemen Proses,Thread dan Konkurensi,3,"Mutual Exclusion, Hold and Wait, No Preemption, Circular Wait","Mutual Exclusion, Preemption, Hold and Wait","No Preemption, Circular Wait saja","Hold and Wait, Starvation",A
+Q011,Penjadwalan CPU,Konsep Penjadwalan,1,Program yang sedang dieksekusi,File yang tersimpan di disk,Instruksi dalam memori ROM,Unit penyimpanan data,A
+Q012,Penjadwalan CPU,Algoritma FCFS dan SJF,1,Ready -> Running -> Blocked,New -> Ready -> Running -> Waiting -> Terminated,Running -> Ready -> New,Blocked -> Running -> Terminated,B
+Q013,Penjadwalan CPU,Round Robin dan Priority,1,Process Control Block (PCB),Memory Allocation Table,File Descriptor Table,Interrupt Vector Table,A
+Q014,Penjadwalan CPU,Multilevel Queue,1,Thread berbagi address space; Process tidak,Process berbagi address space; Thread tidak,Keduanya berbagi address space,Keduanya tidak berbagi address space,A
+Q015,Penjadwalan CPU,Konsep Penjadwalan,2,Race condition,Deadlock,Starvation,Thrashing,A
+Q016,Penjadwalan CPU,Algoritma FCFS dan SJF,2,Mutex,Semaphore,Monitor,Spinlock,B
+Q017,Penjadwalan CPU,Round Robin dan Priority,2,Mutual Exclusion,Progress,Bounded Waiting,Semua benar,D
+Q018,Penjadwalan CPU,Multilevel Queue,2,wait() dan signal(),lock() dan unlock(),P() dan V() saja,acquire() dan release(),C
+Q019,Penjadwalan CPU,Konsep Penjadwalan,3,Deadlock,Starvation,Livelock,Race Condition,A
+Q020,Penjadwalan CPU,Algoritma FCFS dan SJF,3,"Mutual Exclusion, Hold and Wait, No Preemption, Circular Wait","Mutual Exclusion, Preemption, Hold and Wait","No Preemption, Circular Wait saja","Hold and Wait, Starvation",A
+Q021,Manajemen Memori,Konsep Memori,1,Program yang sedang dieksekusi,File yang tersimpan di disk,Instruksi dalam memori ROM,Unit penyimpanan data,A
+Q022,Manajemen Memori,Paging,1,Ready -> Running -> Blocked,New -> Ready -> Running -> Waiting -> Terminated,Running -> Ready -> New,Blocked -> Running -> Terminated,B
+Q023,Manajemen Memori,Segmentasi,1,Process Control Block (PCB),Memory Allocation Table,File Descriptor Table,Interrupt Vector Table,A
+Q024,Manajemen Memori,Konsep Memori,1,Thread berbagi address space; Process tidak,Process berbagi address space; Thread tidak,Keduanya berbagi address space,Keduanya tidak berbagi address space,A
+Q025,Manajemen Memori,Paging,2,Race condition,Deadlock,Starvation,Thrashing,A
+Q026,Manajemen Memori,Segmentasi,2,Mutex,Semaphore,Monitor,Spinlock,B
+Q027,Manajemen Memori,Konsep Memori,2,Mutual Exclusion,Progress,Bounded Waiting,Semua benar,D
+Q028,Manajemen Memori,Paging,2,wait() dan signal(),lock() dan unlock(),P() dan V() saja,acquire() dan release(),C
+Q029,Manajemen Memori,Segmentasi,3,Deadlock,Starvation,Livelock,Race Condition,A
+Q030,Manajemen Memori,Konsep Memori,3,"Mutual Exclusion, Hold and Wait, No Preemption, Circular Wait","Mutual Exclusion, Preemption, Hold and Wait","No Preemption, Circular Wait saja","Hold and Wait, Starvation",A
+Q031,Virtual Memory,Konsep Virtual Memory,1,Program yang sedang dieksekusi,File yang tersimpan di disk,Instruksi dalam memori ROM,Unit penyimpanan data,A
+Q032,Virtual Memory,Page Replacement,1,Ready -> Running -> Blocked,New -> Ready -> Running -> Waiting -> Terminated,Running -> Ready -> New,Blocked -> Running -> Terminated,B
+Q033,Virtual Memory,Thrashing,1,Process Control Block (PCB),Memory Allocation Table,File Descriptor Table,Interrupt Vector Table,A
+Q034,Virtual Memory,Konsep Virtual Memory,1,Thread berbagi address space; Process tidak,Process berbagi address space; Thread tidak,Keduanya berbagi address space,Keduanya tidak berbagi address space,A
+Q035,Virtual Memory,Page Replacement,2,Race condition,Deadlock,Starvation,Thrashing,A
+Q036,Virtual Memory,Thrashing,2,Mutex,Semaphore,Monitor,Spinlock,B
+Q037,Virtual Memory,Konsep Virtual Memory,2,Mutual Exclusion,Progress,Bounded Waiting,Semua benar,D
+Q038,Virtual Memory,Page Replacement,2,wait() dan signal(),lock() dan unlock(),P() dan V() saja,acquire() dan release(),C
+Q039,Virtual Memory,Thrashing,3,Deadlock,Starvation,Livelock,Race Condition,A
+Q040,Virtual Memory,Konsep Virtual Memory,3,"Mutual Exclusion, Hold and Wait, No Preemption, Circular Wait","Mutual Exclusion, Preemption, Hold and Wait","No Preemption, Circular Wait saja","Hold and Wait, Starvation",A
+Q041,File System,Konsep File System,1,Program yang sedang dieksekusi,File yang tersimpan di disk,Instruksi dalam memori ROM,Unit penyimpanan data,A
+Q042,File System,Implementasi File System,1,Ready -> Running -> Blocked,New -> Ready -> Running -> Waiting -> Terminated,Running -> Ready -> New,Blocked -> Running -> Terminated,B
+Q043,File System,Journaling dan Reliability,1,Process Control Block (PCB),Memory Allocation Table,File Descriptor Table,Interrupt Vector Table,A
+Q044,File System,Konsep File System,1,Thread berbagi address space; Process tidak,Process berbagi address space; Thread tidak,Keduanya berbagi address space,Keduanya tidak berbagi address space,A
+Q045,File System,Implementasi File System,2,Race condition,Deadlock,Starvation,Thrashing,A
+Q046,File System,Journaling dan Reliability,2,Mutex,Semaphore,Monitor,Spinlock,B
+Q047,File System,Konsep File System,2,Mutual Exclusion,Progress,Bounded Waiting,Semua benar,D
+Q048,File System,Implementasi File System,2,wait() dan signal(),lock() dan unlock(),P() dan V() saja,acquire() dan release(),C
+Q049,File System,Journaling dan Reliability,3,Deadlock,Starvation,Livelock,Race Condition,A
+Q050,File System,Konsep File System,3,"Mutual Exclusion, Hold and Wait, No Preemption, Circular Wait","Mutual Exclusion, Preemption, Hold and Wait","No Preemption, Circular Wait saja","Hold and Wait, Starvation",A
+Q051,I/O Management,Konsep I/O,1,Program yang sedang dieksekusi,File yang tersimpan di disk,Instruksi dalam memori ROM,Unit penyimpanan data,A
+Q052,I/O Management,Disk Scheduling,1,Ready -> Running -> Blocked,New -> Ready -> Running -> Waiting -> Terminated,Running -> Ready -> New,Blocked -> Running -> Terminated,B
+Q053,I/O Management,DMA dan Buffering,1,Process Control Block (PCB),Memory Allocation Table,File Descriptor Table,Interrupt Vector Table,A
+Q054,I/O Management,Konsep I/O,1,Thread berbagi address space; Process tidak,Process berbagi address space; Thread tidak,Keduanya berbagi address space,Keduanya tidak berbagi address space,A
+Q055,I/O Management,Disk Scheduling,2,Race condition,Deadlock,Starvation,Thrashing,A
+Q056,I/O Management,DMA dan Buffering,2,Mutex,Semaphore,Monitor,Spinlock,B
+Q057,I/O Management,Konsep I/O,2,Mutual Exclusion,Progress,Bounded Waiting,Semua benar,D
+Q058,I/O Management,Disk Scheduling,2,wait() dan signal(),lock() dan unlock(),P() dan V() saja,acquire() dan release(),C
+Q059,I/O Management,DMA dan Buffering,3,Deadlock,Starvation,Livelock,Race Condition,A
+Q060,I/O Management,Konsep I/O,3,"Mutual Exclusion, Hold and Wait, No Preemption, Circular Wait","Mutual Exclusion, Preemption, Hold and Wait","No Preemption, Circular Wait saja","Hold and Wait, Starvation",A
