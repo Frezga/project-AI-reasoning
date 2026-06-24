@@ -46,6 +46,11 @@ function switchTab(tabName) {
 
   const panel = document.getElementById(`${tabName}-panel`);
   if (panel) panel.classList.add("active");
+
+  // Jika masuk ke tab learning, panggil loadStudentPath() agar vis.Network merender graf di tengah
+  if (tabName === "learning") {
+    loadStudentPath();
+  }
 }
 
 function initializeDashboard() {
@@ -270,12 +275,228 @@ function renderStudyGroups() {
               <div class="group-members">
                   ${membersHtml}
               </div>
-              <div class="group-reasoning">
-                  ${group.reasoning}
+              <div class="group-reasoning-container" style="border-top: 1px solid var(--surface-border); padding-top: 1rem; margin-top: 0.5rem;">
+                  <button class="btn-toggle-reasoning" onclick="showReasoningModal(${group.kelompok_id})">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 0.25rem;"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                      <span>Lihat Analisis Rasional AI</span>
+                  </button>
               </div>
           `;
     container.appendChild(card);
   });
+}
+
+function formatReasoning(reasoningText) {
+  if (!reasoningText) return '';
+  
+  // Pisahkan kalimat berdasarkan titik yang diikuti spasi atau akhir string
+  const sentences = reasoningText.split(/\.(?=\s|$)/).map(s => s.trim()).filter(s => s.length > 0);
+  if (sentences.length === 0) return '';
+  
+  let html = '';
+  
+  // Kalimat pertama adalah intro ringkasan: "Kelompok ini dirancang heterogen..."
+  const intro = sentences[0];
+  html += `
+    <div class="reasoning-intro">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="intro-icon" style="color: #6366f1"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>${intro}.</span>
+    </div>
+  `;
+  
+  html += `<div class="reasoning-details">`;
+  
+  // Proses kalimat berikutnya
+  for (let i = 1; i < sentences.length; i++) {
+      let sentence = sentences[i];
+      if (!sentence) continue;
+      
+      if (sentence.includes("berperan sebagai peer-mentor")) {
+          // Mentor role parsing
+          const mentorRegex = /^(\d+)\s*\(([^,]+),\s*rata-rata penguasaan=([^)]+)\)\s*(.*)$/;
+          const match = sentence.match(mentorRegex);
+          if (match) {
+              const nim = match[1];
+              const cluster = match[2];
+              const mastery = match[3].trim();
+              
+              sentence = `
+                <div class="reasoning-item item-mentor">
+                    <div class="item-header">
+                        <div class="student-info">
+                            <div class="student-nim">${nim}</div>
+                            <div class="student-cluster-label">
+                                <span class="cluster-dot dot-mahir"></span>
+                                <span class="cluster-text">${cluster}</span>
+                            </div>
+                        </div>
+                        <div class="item-role-badge badge-mentor">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            Peer Mentor
+                        </div>
+                    </div>
+                    
+                    <div class="mentor-metric-row">
+                        <div class="metric-label">Rerata Penguasaan:</div>
+                        <div class="metric-value-container">
+                            <div class="metric-progress-bg">
+                                <div class="metric-progress-bar" style="width: ${mastery};"></div>
+                            </div>
+                            <span class="metric-percentage">${mastery}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mentor-desc">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <span>Membimbing anggota kelompok lain sebagai rekan belajar (peer-mentor).</span>
+                    </div>
+                </div>
+              `;
+          } else {
+              // Fallback jika regex gagal
+              sentence = `
+                <div class="reasoning-item item-mentor">
+                    <div class="item-header">
+                        <div class="item-role-badge badge-mentor">Peer Mentor</div>
+                    </div>
+                    <div class="item-content">${sentence}.</div>
+                </div>
+              `;
+          }
+      } else {
+          // Support role parsing
+          const supportRegex = /^(\d+)\s*\(([^)]+(?:\([^)]+\)[^)]*)*)\)\s*unggul di '([^']+)'\s*\(P\(L\)=([^)]+)\)\s*namun perlu penguatan di '([^']+)'\s*\(P\(L\)=([^)]+)\),\s*di mana\s*(\d+)\s*dapat membantu\s*\(P\(L\)=([^)]+)\)$/;
+          const match = sentence.match(supportRegex);
+          if (match) {
+              const nim = match[1];
+              const cluster = match[2];
+              const strongTopic = match[3];
+              const strongScore = match[4].trim();
+              const weakTopic = match[5];
+              const weakScore = match[6].trim();
+              const helperNim = match[7];
+              const helperScore = match[8].trim();
+              
+              // Bersihkan nama klaster dari double parenthesis
+              let cleanCluster = cluster;
+              const clusterMatch = cluster.match(/^([^(]+)\s*\(([^)]+)\)$/);
+              if (clusterMatch) {
+                  cleanCluster = `${clusterMatch[1]} • ${clusterMatch[2]}`;
+              }
+              
+              sentence = `
+                <div class="reasoning-item item-needs-support">
+                    <div class="item-header">
+                        <div class="student-info">
+                            <div class="student-nim">${nim}</div>
+                            <div class="student-cluster-label">
+                                <span class="cluster-dot dot-${getClusterBadgeClass(cluster)}"></span>
+                                <span class="cluster-text">${cleanCluster}</span>
+                            </div>
+                        </div>
+                        <div class="item-role-badge badge-support">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                            Learning Path
+                        </div>
+                    </div>
+                    
+                    <div class="topic-comparison-grid">
+                        <div class="topic-box box-strong">
+                            <div class="topic-label-badge badge-strong-label">Unggul</div>
+                            <div class="topic-name">“${strongTopic}”</div>
+                            <div class="topic-score">P(L): <strong style="color: var(--mahir-color); font-weight:700;">${strongScore}</strong></div>
+                        </div>
+                        <div class="topic-box box-weak">
+                            <div class="topic-label-badge badge-weak-label">Butuh Penguatan</div>
+                            <div class="topic-name">“${weakTopic}”</div>
+                            <div class="topic-score">P(L): <strong style="color: var(--remedial-color); font-weight:700;">${weakScore}</strong></div>
+                        </div>
+                    </div>
+                    
+                    <div class="helper-box">
+                        <div class="helper-title">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--mahir-color); vertical-align: middle; margin-right: 0.25rem;"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            <span>Rencana Pendampingan Tutor</span>
+                        </div>
+                        <div class="helper-details">
+                            Akan dibantu oleh tutor <strong class="text-nim">${helperNim}</strong> yang memiliki tingkat penguasaan materi ini sebesar <span class="score-badge">${helperScore}</span>.
+                        </div>
+                    </div>
+                </div>
+              `;
+          } else {
+              // Fallback
+              let formatted = sentence;
+              formatted = formatted.replace(/'([^']+)'/g, `<strong class="text-topic">“$1”</strong>`);
+              formatted = formatted.replace(/(P\(L\)=\d+(?:\.\d+)?%)/g, `<span class="score-badge">$1</span>`);
+              formatted = formatted.replace(/(rata-rata penguasaan=\d+(?:\.\d+)?%)/g, `<span class="score-badge">$1</span>`);
+              formatted = formatted.replace(/\b(2301\d{3})\b/g, `<strong class="text-nim">$1</strong>`);
+              
+              sentence = `
+                <div class="reasoning-item item-needs-support">
+                    <div class="item-header">
+                        <div class="item-role-badge badge-support">Learning Path</div>
+                    </div>
+                    <div class="item-content">${formatted}.</div>
+                </div>
+              `;
+          }
+      }
+      html += sentence;
+  }
+  
+  html += `</div>`;
+  return html;
+}
+
+function showReasoningModal(kelompokId) {
+  const group = appData.groups.find(g => g.kelompok_id === kelompokId);
+  if (!group) return;
+  
+  // Buat modal overlay
+  const modalDiv = document.createElement("div");
+  modalDiv.className = "modal-overlay reasoning-modal-overlay";
+  modalDiv.id = `reasoning-modal-${kelompokId}`;
+  
+  modalDiv.innerHTML = `
+    <div class="modal-content reasoning-modal-content">
+        <div class="modal-header">
+            <h2>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #6366f1; vertical-align: middle; margin-right: 0.5rem;"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Rasional Pengelompokan - Kelompok ${group.kelompok_id}
+            </h2>
+            <button class="modal-close-btn" onclick="closeReasoningModal('${modalDiv.id}')" aria-label="Close">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-reasoning-wrap">
+                ${formatReasoning(group.reasoning)}
+            </div>
+        </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modalDiv);
+  
+  // Kunci scroll body
+  document.body.style.overflow = "hidden";
+  
+  // Tutup jika mengklik overlay luar modal
+  modalDiv.addEventListener("click", (e) => {
+      if (e.target === modalDiv) {
+          closeReasoningModal(modalDiv.id);
+      }
+  });
+}
+
+function closeReasoningModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+      modal.remove();
+      // Selalu kembalikan scroll body setelah modal ditutup
+      document.body.style.overflow = "";
+  }
 }
 
 function loadStudentPath() {
@@ -411,8 +632,18 @@ function loadStudentPath() {
                       edgesArr.push({
                           from: prereq,
                           to: materi,
-                          arrows: "to",
-                          color: { color: "rgba(255,255,255,0.4)" },
+                          arrows: {
+                              to: {
+                                  enabled: true,
+                                  scaleFactor: 1.15
+                              }
+                          },
+                          color: {
+                              color: "#64748b",
+                              highlight: "#4f46e5",
+                              hover: "#4f46e5"
+                          },
+                          width: 2,
                           smooth: { type: "cubicBezier" }
                       });
                   }
@@ -439,7 +670,8 @@ function loadStudentPath() {
       interaction: {
           dragNodes: true,
           dragView: true,
-          zoomView: true
+          zoomView: true,
+          hover: true
       }
   };
 
