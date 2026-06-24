@@ -10,6 +10,11 @@ from bkt_engine import BKTEngine
 from clustering_engine import ClusteringEngine
 from grouping_engine import GroupingEngine
 
+try:
+    from knowledge_graph import PREREQUISITE_GRAPH
+except ImportError:
+    from app.knowledge_graph import PREREQUISITE_GRAPH
+
 
 
 def label_clusters(cluster_profile: pd.DataFrame) -> dict:
@@ -36,7 +41,16 @@ def label_clusters(cluster_profile: pd.DataFrame) -> dict:
         semantic_labels[sorted_clusters[0]] = "Mahir"
         semantic_labels[sorted_clusters[-1]] = "Remedial"
         for i in range(1, n_clusters - 1):
-            semantic_labels[sorted_clusters[i]] = "Cukup"
+            c_id = sorted_clusters[i]
+            row = cluster_profile.loc[c_id]
+            min_materi = row.idxmin()
+            min_score = row.min()
+            max_score = row.max()
+            
+            if (max_score - min_score) >= 0.20 and min_score < 0.70:
+                semantic_labels[c_id] = f"Cukup (Butuh Penguatan {min_materi})"
+            else:
+                semantic_labels[c_id] = "Cukup (Pemahaman Dasar/Semenjana)"
             
     return semantic_labels
 
@@ -76,5 +90,6 @@ def run_pipeline(mahasiswa_csv, kuis_csv, log_csv, group_size=4):
         'groups': groups,
         'learning_paths': learning_paths,
         'cluster_profile': cluster_profile,
-        'cluster_labels': dict(zip(nim_list, cluster_labels.tolist()))
+        'cluster_labels': dict(zip(nim_list, cluster_labels.tolist())),
+        'prerequisite_graph': PREREQUISITE_GRAPH
     }

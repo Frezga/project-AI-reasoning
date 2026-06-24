@@ -334,6 +334,12 @@ function loadStudentPath() {
     if (step.status.includes("Dikuasai")) statusClass = "mahir";
     else if (step.status.includes("Penguatan")) statusClass = "cukup";
 
+    const backtrackHtml = step.rekomendasi_backtrack ? 
+        `<div style="margin-top: 0.5rem; font-size: 0.8rem; color: #f87171; background: rgba(248,113,113,0.1); padding: 0.3rem 0.6rem; border-radius: 4px; border: 1px solid rgba(248,113,113,0.3);">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 0.2rem;"><path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/></svg>
+            ${step.rekomendasi_backtrack}
+        </div>` : '';
+
     stepDiv.innerHTML = `
               <div class="step-header">
                   <span class="step-title">${step.materi}</span>
@@ -343,9 +349,90 @@ function loadStudentPath() {
                   <span class="step-score">Probabilitas Penguasaan: <strong style="color: #f3f4f6;">${Math.round(step.p_ln * 100)}%</strong></span>
                   <span class="status-badge status-${statusClass}">${step.status}</span>
               </div>
+              ${backtrackHtml}
           `;
     timelineContainer.appendChild(stepDiv);
   });
+
+  // 3. Render Node-Based Graph
+  const container = document.getElementById("path-network-container");
+  
+  // Siapkan Nodes
+  const nodesArr = [];
+  const edgesArr = [];
+  const addedNodes = new Set();
+  
+  // Buat node untuk setiap materi di path
+  studentData.path.forEach((step, i) => {
+      let bgColor = "#ef4444"; // remedial
+      if (step.status.includes("Dikuasai")) bgColor = "#10b981"; // mahir
+      else if (step.status.includes("Penguatan")) bgColor = "#f59e0b"; // cukup
+      
+      let borderColor = step.prioritas === 1 ? "#fff" : bgColor;
+      let borderWidth = step.prioritas === 1 ? 3 : 1;
+      
+      nodesArr.push({
+          id: step.materi,
+          label: `${step.materi}\nP(L): ${Math.round(step.p_ln*100)}%`,
+          color: {
+              background: bgColor,
+              border: borderColor,
+              highlight: {
+                  background: bgColor,
+                  border: "#fff"
+              }
+          },
+          font: { color: "#fff", face: "Plus Jakarta Sans", size: 14 },
+          shape: "box",
+          borderWidth: borderWidth,
+          margin: 10,
+          shadow: true
+      });
+      addedNodes.add(step.materi);
+  });
+  
+  // Buat Edges berdasarkan prerequisite_graph
+  if (appData.prerequisite_graph) {
+      for (const [materi, prereqs] of Object.entries(appData.prerequisite_graph)) {
+          if (addedNodes.has(materi)) {
+              prereqs.forEach(prereq => {
+                  if (addedNodes.has(prereq)) {
+                      edgesArr.push({
+                          from: prereq,
+                          to: materi,
+                          arrows: "to",
+                          color: { color: "rgba(255,255,255,0.4)" },
+                          smooth: { type: "cubicBezier" }
+                      });
+                  }
+              });
+          }
+      }
+  }
+
+  const data = {
+      nodes: new vis.DataSet(nodesArr),
+      edges: new vis.DataSet(edgesArr)
+  };
+
+  const options = {
+      layout: {
+          hierarchical: {
+              direction: "UD",
+              sortMethod: "directed",
+              nodeSpacing: 150,
+              levelSeparation: 100
+          }
+      },
+      physics: false,
+      interaction: {
+          dragNodes: true,
+          dragView: true,
+          zoomView: true
+      }
+  };
+
+  new vis.Network(container, data, options);
 }
 
 // ==========================================================================
