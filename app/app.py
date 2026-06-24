@@ -86,7 +86,8 @@ def get_results():
             'groups': enriched_groups,
             'learning_paths': enriched_learning_paths,
             'cluster_profile': profile_list,
-            'cluster_labels': {k: int(v) for k, v in results['cluster_labels'].items()}
+            'cluster_labels': {k: int(v) for k, v in results['cluster_labels'].items()},
+            'prerequisite_graph': results.get('prerequisite_graph', {})
         })
     except Exception as e:
         import traceback

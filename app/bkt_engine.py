@@ -3,6 +3,11 @@
 from dataclasses import dataclass, field
 from typing import List, Dict
 
+try:
+    from knowledge_graph import get_prerequisites
+except ImportError:
+    from app.knowledge_graph import get_prerequisites
+
 @dataclass
 class BKTParams:
     """Parameter BKT per materi/submateri."""
@@ -112,10 +117,10 @@ class BKTEngine:
     def get_learning_path(self, nim: str, all_materi: List[str]) -> List[Dict]:
         """
         Menghasilkan Learning Path personal berdasarkan P(Ln).
-        Urutan: Materi dengan P(Ln) TERENDAH diprioritaskan.
+        Urutan: Materi dengan P(Ln) TERENDAH diprioritaskan, namun mempertimbangkan prasyarat.
         
         Mengembalikan:
-            List of dict: [{'materi': ..., 'p_ln': ..., 'status': ...}]
+            List of dict: [{'materi': ..., 'p_ln': ..., 'status': ..., 'rekomendasi_backtrack': ...}]
         """
         nim = str(nim)
         mastery = self.get_mastery_vector(nim)
@@ -123,24 +128,44 @@ class BKTEngine:
         
         for materi in all_materi:
             p_ln = mastery.get(materi, self._get_params(materi).p_l0)
+            is_mastered = p_ln >= self.MASTERY_THRESHOLD
             
-            if p_ln >= self.MASTERY_THRESHOLD:
+            if is_mastered:
                 status = "Dikuasai"
             elif p_ln >= 0.50:
                 status = "Perlu Penguatan"
             else:
                 status = "Perlu Remedial !"
+                
+            # Cek prasyarat
+            prereqs = get_prerequisites(materi)
+            unmastered_prereqs = [
+                p for p in prereqs 
+                if mastery.get(p, self._get_params(p).p_l0) < self.MASTERY_THRESHOLD
+            ]
+            
+            rekomendasi_backtrack = None
+            if not is_mastered and unmastered_prereqs:
+                rekomendasi_backtrack = f"Prasyarat belum dikuasai: {', '.join(unmastered_prereqs)}"
             
             result.append({
                 'materi': materi,
                 'p_ln': round(p_ln, 4),
-                'status': status
+                'status': status,
+                'unmastered_prereqs_count': len(unmastered_prereqs),
+                'rekomendasi_backtrack': rekomendasi_backtrack
             })
         
-        # Sort: belum dikuasai dulu, lalu urutkan dari P(Ln) terkecil
-        result.sort(key=lambda x: (x['p_ln'] >= self.MASTERY_THRESHOLD, x['p_ln']))
+        # Sort: belum dikuasai dulu, lalu yang prasyaratnya sudah beres (count=0), lalu P(Ln) terkecil
+        result.sort(key=lambda x: (
+            x['p_ln'] >= self.MASTERY_THRESHOLD, 
+            x['unmastered_prereqs_count'], 
+            x['p_ln']
+        ))
         
         for i, item in enumerate(result):
             item['prioritas'] = i + 1
+            # Hapus key helper yang tidak perlu diekspos
+            del item['unmastered_prereqs_count']
         
         return result
