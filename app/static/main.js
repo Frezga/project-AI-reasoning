@@ -96,7 +96,7 @@ function initializeDashboard() {
                   <span class="status-badge status-${getClusterBadgeClass(label)}">${label}</span>
               </td>
               <td style="font-weight: 600;">${size} mahasiswa</td>
-              <td style="color: #a5b4fc; font-weight: 600;">${Math.round(avgMasteryScore * 100)}%</td>
+              <td style="color: #4f46e5; font-weight: 700;">${Math.round(avgMasteryScore * 100)}%</td>
           `;
     clusterDistTbody.appendChild(tr);
   });
@@ -684,4 +684,28 @@ function showUploadMessage(msg, type) {
     msgBox.classList.add('upload-msg-info');
   }
 }
+
+function openRulesModal() {
+  const modal = document.getElementById('rules-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeRulesModal() {
+  const modal = document.getElementById('rules-modal');
+  if (modal) {
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+}
+
+// Tutup modal jika pengguna mengeklik di luar area konten modal
+document.addEventListener('click', (e) => {
+  const modal = document.getElementById('rules-modal');
+  if (e.target === modal) {
+    closeRulesModal();
+  }
+});
 
