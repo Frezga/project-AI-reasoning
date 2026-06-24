@@ -296,6 +296,17 @@ function loadStudentPath() {
     (scoresList.reduce((a, b) => a + b, 0) / scoresList.length) * 100,
   );
 
+  // Tentukan warna status dinamis berdasarkan tingkat penguasaan
+  let statusColor = "var(--remedial-color)"; // Merah untuk teks remedial
+  let barColor = "var(--remedial-color)";    // Merah untuk bar
+  if (overallMastery >= 75) {
+    statusColor = "var(--mahir-color)";      // Hijau untuk teks mahir
+    barColor = "var(--mahir-color)";         // Hijau untuk bar
+  } else if (overallMastery >= 50) {
+    statusColor = "#b57c00";                 // Kuning-emas tua yang kontras untuk teks
+    barColor = "#eab308";                    // Kuning cerah yang indah untuk bar
+  }
+
   profileCard.innerHTML = `
           <h2 style="margin-bottom: 1.5rem;">Profil Mahasiswa</h2>
           <div style="display: flex; flex-direction: column; gap: 1rem; align-items: center; text-align: center; margin-bottom: 2rem;">
@@ -313,11 +324,11 @@ function loadStudentPath() {
           
           <div style="border-top: 1px solid var(--surface-border); padding-top: 1.5rem;">
               <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                  <span style="font-size: 0.85rem; color: var(--text-secondary);">Estimasi Penguasaan Konsep:</span>
-                  <span style="font-size: 0.85rem; font-weight: 700; color: #a5b4fc;">${overallMastery}%</span>
+                  <span style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600;">Estimasi Penguasaan Konsep:</span>
+                  <span style="font-size: 0.85rem; font-weight: 700; color: ${statusColor};">${overallMastery}%</span>
               </div>
-              <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 999px; overflow: hidden;">
-                  <div style="width: ${overallMastery}%; height: 100%; background: var(--primary-gradient); border-radius: 999px;"></div>
+              <div style="width: 100%; height: 8px; background: #cbd5e1; border-radius: 999px; overflow: hidden;">
+                  <div style="width: ${overallMastery}%; height: 100%; background: ${barColor}; border-radius: 999px;"></div>
               </div>
           </div>
       `;
