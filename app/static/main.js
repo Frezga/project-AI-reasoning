@@ -39,8 +39,10 @@ function switchTab(tabName) {
     .forEach((p) => p.classList.remove("active"));
 
   // Cari tombol tab berdasarkan tabName dan aktifkan
-  const btn = Array.from(document.querySelectorAll(".tab-btn")).find(b => 
-    b.getAttribute("onclick") && b.getAttribute("onclick").includes(`'${tabName}'`)
+  const btn = Array.from(document.querySelectorAll(".tab-btn")).find(
+    (b) =>
+      b.getAttribute("onclick") &&
+      b.getAttribute("onclick").includes(`'${tabName}'`),
   );
   if (btn) btn.classList.add("active");
 
@@ -287,14 +289,17 @@ function renderStudyGroups() {
 }
 
 function formatReasoning(reasoningText) {
-  if (!reasoningText) return '';
-  
+  if (!reasoningText) return "";
+
   // Pisahkan kalimat berdasarkan titik yang diikuti spasi atau akhir string
-  const sentences = reasoningText.split(/\.(?=\s|$)/).map(s => s.trim()).filter(s => s.length > 0);
-  if (sentences.length === 0) return '';
-  
-  let html = '';
-  
+  const sentences = reasoningText
+    .split(/\.(?=\s|$)/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+  if (sentences.length === 0) return "";
+
+  let html = "";
+
   // Kalimat pertama adalah intro ringkasan: "Kelompok ini dirancang heterogen..."
   const intro = sentences[0];
   html += `
@@ -303,24 +308,25 @@ function formatReasoning(reasoningText) {
         <span>${intro}.</span>
     </div>
   `;
-  
+
   html += `<div class="reasoning-details">`;
-  
+
   // Proses kalimat berikutnya
   for (let i = 1; i < sentences.length; i++) {
-      let sentence = sentences[i];
-      if (!sentence) continue;
-      
-      if (sentence.includes("berperan sebagai peer-mentor")) {
-          // Mentor role parsing
-          const mentorRegex = /^(\d+)\s*\(([^,]+),\s*rata-rata penguasaan=([^)]+)\)\s*(.*)$/;
-          const match = sentence.match(mentorRegex);
-          if (match) {
-              const nim = match[1];
-              const cluster = match[2];
-              const mastery = match[3].trim();
-              
-              sentence = `
+    let sentence = sentences[i];
+    if (!sentence) continue;
+
+    if (sentence.includes("berperan sebagai peer-mentor")) {
+      // Mentor role parsing
+      const mentorRegex =
+        /^(\d+)\s*\(([^,]+),\s*rata-rata penguasaan=([^)]+)\)\s*(.*)$/;
+      const match = sentence.match(mentorRegex);
+      if (match) {
+        const nim = match[1];
+        const cluster = match[2];
+        const mastery = match[3].trim();
+
+        sentence = `
                 <div class="reasoning-item item-mentor">
                     <div class="item-header">
                         <div class="student-info">
@@ -352,9 +358,9 @@ function formatReasoning(reasoningText) {
                     </div>
                 </div>
               `;
-          } else {
-              // Fallback jika regex gagal
-              sentence = `
+      } else {
+        // Fallback jika regex gagal
+        sentence = `
                 <div class="reasoning-item item-mentor">
                     <div class="item-header">
                         <div class="item-role-badge badge-mentor">Peer Mentor</div>
@@ -362,29 +368,30 @@ function formatReasoning(reasoningText) {
                     <div class="item-content">${sentence}.</div>
                 </div>
               `;
-          }
-      } else {
-          // Support role parsing
-          const supportRegex = /^(\d+)\s*\(([^)]+(?:\([^)]+\)[^)]*)*)\)\s*unggul di '([^']+)'\s*\(P\(L\)=([^)]+)\)\s*namun perlu penguatan di '([^']+)'\s*\(P\(L\)=([^)]+)\),\s*di mana\s*(\d+)\s*dapat membantu\s*\(P\(L\)=([^)]+)\)$/;
-          const match = sentence.match(supportRegex);
-          if (match) {
-              const nim = match[1];
-              const cluster = match[2];
-              const strongTopic = match[3];
-              const strongScore = match[4].trim();
-              const weakTopic = match[5];
-              const weakScore = match[6].trim();
-              const helperNim = match[7];
-              const helperScore = match[8].trim();
-              
-              // Bersihkan nama klaster dari double parenthesis
-              let cleanCluster = cluster;
-              const clusterMatch = cluster.match(/^([^(]+)\s*\(([^)]+)\)$/);
-              if (clusterMatch) {
-                  cleanCluster = `${clusterMatch[1]} • ${clusterMatch[2]}`;
-              }
-              
-              sentence = `
+      }
+    } else {
+      // Support role parsing
+      const supportRegex =
+        /^(\d+)\s*\(([^)]+(?:\([^)]+\)[^)]*)*)\)\s*unggul di '([^']+)'\s*\(P\(L\)=([^)]+)\)\s*namun perlu penguatan di '([^']+)'\s*\(P\(L\)=([^)]+)\),\s*di mana\s*(\d+)\s*dapat membantu\s*\(P\(L\)=([^)]+)\)$/;
+      const match = sentence.match(supportRegex);
+      if (match) {
+        const nim = match[1];
+        const cluster = match[2];
+        const strongTopic = match[3];
+        const strongScore = match[4].trim();
+        const weakTopic = match[5];
+        const weakScore = match[6].trim();
+        const helperNim = match[7];
+        const helperScore = match[8].trim();
+
+        // Bersihkan nama klaster dari double parenthesis
+        let cleanCluster = cluster;
+        const clusterMatch = cluster.match(/^([^(]+)\s*\(([^)]+)\)$/);
+        if (clusterMatch) {
+          cleanCluster = `${clusterMatch[1]} • ${clusterMatch[2]}`;
+        }
+
+        sentence = `
                 <div class="reasoning-item item-needs-support">
                     <div class="item-header">
                         <div class="student-info">
@@ -424,15 +431,27 @@ function formatReasoning(reasoningText) {
                     </div>
                 </div>
               `;
-          } else {
-              // Fallback
-              let formatted = sentence;
-              formatted = formatted.replace(/'([^']+)'/g, `<strong class="text-topic">“$1”</strong>`);
-              formatted = formatted.replace(/(P\(L\)=\d+(?:\.\d+)?%)/g, `<span class="score-badge">$1</span>`);
-              formatted = formatted.replace(/(rata-rata penguasaan=\d+(?:\.\d+)?%)/g, `<span class="score-badge">$1</span>`);
-              formatted = formatted.replace(/\b(2301\d{3})\b/g, `<strong class="text-nim">$1</strong>`);
-              
-              sentence = `
+      } else {
+        // Fallback
+        let formatted = sentence;
+        formatted = formatted.replace(
+          /'([^']+)'/g,
+          `<strong class="text-topic">“$1”</strong>`,
+        );
+        formatted = formatted.replace(
+          /(P\(L\)=\d+(?:\.\d+)?%)/g,
+          `<span class="score-badge">$1</span>`,
+        );
+        formatted = formatted.replace(
+          /(rata-rata penguasaan=\d+(?:\.\d+)?%)/g,
+          `<span class="score-badge">$1</span>`,
+        );
+        formatted = formatted.replace(
+          /\b(2301\d{3})\b/g,
+          `<strong class="text-nim">$1</strong>`,
+        );
+
+        sentence = `
                 <div class="reasoning-item item-needs-support">
                     <div class="item-header">
                         <div class="item-role-badge badge-support">Learning Path</div>
@@ -440,24 +459,24 @@ function formatReasoning(reasoningText) {
                     <div class="item-content">${formatted}.</div>
                 </div>
               `;
-          }
       }
-      html += sentence;
+    }
+    html += sentence;
   }
-  
+
   html += `</div>`;
   return html;
 }
 
 function showReasoningModal(kelompokId) {
-  const group = appData.groups.find(g => g.kelompok_id === kelompokId);
+  const group = appData.groups.find((g) => g.kelompok_id === kelompokId);
   if (!group) return;
-  
+
   // Buat modal overlay
   const modalDiv = document.createElement("div");
   modalDiv.className = "modal-overlay reasoning-modal-overlay";
   modalDiv.id = `reasoning-modal-${kelompokId}`;
-  
+
   modalDiv.innerHTML = `
     <div class="modal-content reasoning-modal-content">
         <div class="modal-header">
@@ -476,26 +495,26 @@ function showReasoningModal(kelompokId) {
         </div>
     </div>
   `;
-  
+
   document.body.appendChild(modalDiv);
-  
+
   // Kunci scroll body
   document.body.style.overflow = "hidden";
-  
+
   // Tutup jika mengklik overlay luar modal
   modalDiv.addEventListener("click", (e) => {
-      if (e.target === modalDiv) {
-          closeReasoningModal(modalDiv.id);
-      }
+    if (e.target === modalDiv) {
+      closeReasoningModal(modalDiv.id);
+    }
   });
 }
 
 function closeReasoningModal(modalId) {
   const modal = document.getElementById(modalId);
   if (modal) {
-      modal.remove();
-      // Selalu kembalikan scroll body setelah modal ditutup
-      document.body.style.overflow = "";
+    modal.remove();
+    // Selalu kembalikan scroll body setelah modal ditutup
+    document.body.style.overflow = "";
   }
 }
 
@@ -519,13 +538,13 @@ function loadStudentPath() {
 
   // Tentukan warna status dinamis berdasarkan tingkat penguasaan
   let statusColor = "var(--remedial-color)"; // Merah untuk teks remedial
-  let barColor = "var(--remedial-color)";    // Merah untuk bar
+  let barColor = "var(--remedial-color)"; // Merah untuk bar
   if (overallMastery >= 75) {
-    statusColor = "var(--mahir-color)";      // Hijau untuk teks mahir
-    barColor = "var(--mahir-color)";         // Hijau untuk bar
+    statusColor = "var(--mahir-color)"; // Hijau untuk teks mahir
+    barColor = "var(--mahir-color)"; // Hijau untuk bar
   } else if (overallMastery >= 50) {
-    statusColor = "#b57c00";                 // Kuning-emas tua yang kontras untuk teks
-    barColor = "#eab308";                    // Kuning cerah yang indah untuk bar
+    statusColor = "#b57c00"; // Kuning-emas tua yang kontras untuk teks
+    barColor = "#eab308"; // Kuning cerah yang indah untuk bar
   }
 
   profileCard.innerHTML = `
@@ -566,11 +585,12 @@ function loadStudentPath() {
     if (step.status.includes("Dikuasai")) statusClass = "mahir";
     else if (step.status.includes("Penguatan")) statusClass = "cukup";
 
-    const backtrackHtml = step.rekomendasi_backtrack ? 
-        `<div style="margin-top: 0.5rem; font-size: 0.8rem; color: #f87171; background: rgba(248,113,113,0.1); padding: 0.3rem 0.6rem; border-radius: 4px; border: 1px solid rgba(248,113,113,0.3);">
+    const backtrackHtml = step.rekomendasi_backtrack
+      ? `<div style="margin-top: 0.5rem; font-size: 0.8rem; color: #f87171; background: rgba(248,113,113,0.1); padding: 0.3rem 0.6rem; border-radius: 4px; border: 1px solid rgba(248,113,113,0.3);">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 0.2rem;"><path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/></svg>
             ${step.rekomendasi_backtrack}
-        </div>` : '';
+        </div>`
+      : "";
 
     stepDiv.innerHTML = `
               <div class="step-header">
@@ -588,91 +608,94 @@ function loadStudentPath() {
 
   // 3. Render Node-Based Graph
   const container = document.getElementById("path-network-container");
-  
+
   // Siapkan Nodes
   const nodesArr = [];
   const edgesArr = [];
   const addedNodes = new Set();
-  
+
   // Buat node untuk setiap materi di path
   studentData.path.forEach((step, i) => {
-      let bgColor = "#ef4444"; // remedial
-      if (step.status.includes("Dikuasai")) bgColor = "#10b981"; // mahir
-      else if (step.status.includes("Penguatan")) bgColor = "#f59e0b"; // cukup
-      
-      let borderColor = step.prioritas === 1 ? "#fff" : bgColor;
-      let borderWidth = step.prioritas === 1 ? 3 : 1;
-      
-      nodesArr.push({
-          id: step.materi,
-          label: `${step.materi}\nP(L): ${Math.round(step.p_ln*100)}%`,
-          color: {
-              background: bgColor,
-              border: borderColor,
-              highlight: {
-                  background: bgColor,
-                  border: "#fff"
-              }
-          },
-          font: { color: "#fff", face: "Plus Jakarta Sans", size: 14 },
-          shape: "box",
-          borderWidth: borderWidth,
-          margin: 10,
-          shadow: true
-      });
-      addedNodes.add(step.materi);
+    let bgColor = "#ef4444"; // remedial
+    if (step.status.includes("Dikuasai"))
+      bgColor = "#10b981"; // mahir
+    else if (step.status.includes("Penguatan")) bgColor = "#f59e0b"; // cukup
+
+    let borderColor = step.prioritas === 1 ? "#fff" : bgColor;
+    let borderWidth = step.prioritas === 1 ? 3 : 1;
+
+    nodesArr.push({
+      id: step.materi,
+      label: `${step.materi}\nP(L): ${Math.round(step.p_ln * 100)}%`,
+      color: {
+        background: bgColor,
+        border: borderColor,
+        highlight: {
+          background: bgColor,
+          border: "#fff",
+        },
+      },
+      font: { color: "#fff", face: "Plus Jakarta Sans", size: 14 },
+      shape: "box",
+      borderWidth: borderWidth,
+      margin: 10,
+      shadow: true,
+    });
+    addedNodes.add(step.materi);
   });
-  
+
   // Buat Edges berdasarkan prerequisite_graph
   if (appData.prerequisite_graph) {
-      for (const [materi, prereqs] of Object.entries(appData.prerequisite_graph)) {
-          if (addedNodes.has(materi)) {
-              prereqs.forEach(prereq => {
-                  if (addedNodes.has(prereq)) {
-                      edgesArr.push({
-                          from: prereq,
-                          to: materi,
-                          arrows: {
-                              to: {
-                                  enabled: true,
-                                  scaleFactor: 1.15
-                              }
-                          },
-                          color: {
-                              color: "#64748b",
-                              highlight: "#4f46e5",
-                              hover: "#4f46e5"
-                          },
-                          width: 2,
-                          smooth: { type: "cubicBezier" }
-                      });
-                  }
-              });
+    for (const [materi, prereqs] of Object.entries(
+      appData.prerequisite_graph,
+    )) {
+      if (addedNodes.has(materi)) {
+        prereqs.forEach((prereq) => {
+          if (addedNodes.has(prereq)) {
+            edgesArr.push({
+              from: prereq,
+              to: materi,
+              arrows: {
+                to: {
+                  enabled: true,
+                  scaleFactor: 1.15,
+                },
+              },
+              color: {
+                color: "#64748b",
+                highlight: "#4f46e5",
+                hover: "#4f46e5",
+              },
+              width: 2,
+              smooth: { type: "cubicBezier" },
+            });
           }
+        });
       }
+    }
   }
 
   const data = {
-      nodes: new vis.DataSet(nodesArr),
-      edges: new vis.DataSet(edgesArr)
+    nodes: new vis.DataSet(nodesArr),
+    edges: new vis.DataSet(edgesArr),
   };
 
   const options = {
-      layout: {
-          hierarchical: {
-              direction: "UD",
-              sortMethod: "directed",
-              nodeSpacing: 150,
-              levelSeparation: 100
-          }
+    layout: {
+      hierarchical: {
+        direction: "UD",
+        sortMethod: "directed",
+        nodeSpacing: 150,
+        levelSeparation: 100,
       },
-      physics: false,
-      interaction: {
-          dragNodes: true,
-          dragView: true,
-          zoomView: true,
-          hover: true
-      }
+    },
+    physics: false,
+    interaction: {
+      dragNodes: true,
+      dragView: true,
+      zoomView: true,
+      hover: true,
+    },
   };
 
   new vis.Network(container, data, options);
@@ -685,26 +708,26 @@ function loadStudentPath() {
 let uploadedFiles = {
   mahasiswa: null,
   kuis: null,
-  log: null
+  log: null,
 };
 
 let fileValidationStatus = {
   mahasiswa: false,
   kuis: false,
-  log: false
+  log: false,
 };
 
 function initUploadHandlers() {
-  const uploadKeys = ['mahasiswa', 'kuis', 'log'];
-  
-  uploadKeys.forEach(key => {
+  const uploadKeys = ["mahasiswa", "kuis", "log"];
+
+  uploadKeys.forEach((key) => {
     const dropzone = document.getElementById(`dropzone-${key}`);
     const input = document.getElementById(`file-${key}`);
-    
+
     if (!dropzone || !input) return;
 
     // Klik dropzone untuk memilih berkas
-    dropzone.addEventListener('click', (e) => {
+    dropzone.addEventListener("click", (e) => {
       // Pastikan input file diklik, cegah perulangan event click
       if (e.target !== input) {
         input.click();
@@ -712,34 +735,34 @@ function initUploadHandlers() {
     });
 
     // Perubahan file input
-    input.addEventListener('change', (e) => {
+    input.addEventListener("change", (e) => {
       if (e.target.files.length > 0) {
         handleFileSelection(key, e.target.files[0]);
       }
     });
 
     // Drag-and-drop events
-    dropzone.addEventListener('dragover', (e) => {
+    dropzone.addEventListener("dragover", (e) => {
       e.preventDefault();
-      dropzone.classList.add('dragover');
+      dropzone.classList.add("dragover");
     });
 
-    dropzone.addEventListener('dragleave', () => {
-      dropzone.classList.remove('dragover');
+    dropzone.addEventListener("dragleave", () => {
+      dropzone.classList.remove("dragover");
     });
 
-    dropzone.addEventListener('drop', (e) => {
+    dropzone.addEventListener("drop", (e) => {
       e.preventDefault();
-      dropzone.classList.remove('dragover');
+      dropzone.classList.remove("dragover");
       if (e.dataTransfer.files.length > 0) {
         handleFileSelection(key, e.dataTransfer.files[0]);
       }
     });
 
     // Event click untuk tombol X (hapus file)
-    const removeBtn = dropzone.querySelector('.btn-remove-file');
+    const removeBtn = dropzone.querySelector(".btn-remove-file");
     if (removeBtn) {
-      removeBtn.addEventListener('click', (e) => {
+      removeBtn.addEventListener("click", (e) => {
         e.stopPropagation(); // mencegah membuka file dialog
         clearFileSelection(key);
       });
@@ -751,10 +774,10 @@ function handleFileSelection(key, file) {
   if (!file) return;
 
   const dropzone = document.getElementById(`dropzone-${key}`);
-  const filePrompt = dropzone.querySelector('.dropzone-prompt');
-  const fileInfo = dropzone.querySelector('.file-info');
-  const fileNameSpan = fileInfo.querySelector('.file-name');
-  const fileStatusSpan = fileInfo.querySelector('.file-status');
+  const filePrompt = dropzone.querySelector(".dropzone-prompt");
+  const fileInfo = dropzone.querySelector(".file-info");
+  const fileNameSpan = fileInfo.querySelector(".file-name");
+  const fileStatusSpan = fileInfo.querySelector(".file-status");
 
   // Reset status validasi per file terlebih dahulu
   fileValidationStatus[key] = false;
@@ -762,18 +785,36 @@ function handleFileSelection(key, file) {
   updateProcessButtonState();
 
   // Validasi ekstensi
-  const extension = file.name.split('.').pop().toLowerCase();
-  if (extension !== 'csv' && extension !== 'xlsx' && extension !== 'xls') {
-    showFileStatus(dropzone, filePrompt, fileInfo, fileNameSpan, fileStatusSpan, file.name, "Error: Ekstensi file tidak didukung", "remedial");
+  const extension = file.name.split(".").pop().toLowerCase();
+  if (extension !== "csv" && extension !== "xlsx" && extension !== "xls") {
+    showFileStatus(
+      dropzone,
+      filePrompt,
+      fileInfo,
+      fileNameSpan,
+      fileStatusSpan,
+      file.name,
+      "Error: Ekstensi file tidak didukung",
+      "remedial",
+    );
     return;
   }
 
   // Set nama berkas
   fileNameSpan.innerText = file.name;
 
-  if (extension === 'xlsx' || extension === 'xls') {
+  if (extension === "xlsx" || extension === "xls") {
     // File excel divalidasi langsung di server
-    showFileStatus(dropzone, filePrompt, fileInfo, fileNameSpan, fileStatusSpan, file.name, "Format Excel", "info");
+    showFileStatus(
+      dropzone,
+      filePrompt,
+      fileInfo,
+      fileNameSpan,
+      fileStatusSpan,
+      file.name,
+      "Format Excel",
+      "info",
+    );
     uploadedFiles[key] = file;
     fileValidationStatus[key] = true;
     updateProcessButtonState();
@@ -781,66 +822,105 @@ function handleFileSelection(key, file) {
     // File CSV divalidasi client-side terlebih dahulu
     validateCSVClientSide(key, file, (isValid, errorMsg) => {
       if (isValid) {
-        showFileStatus(dropzone, filePrompt, fileInfo, fileNameSpan, fileStatusSpan, file.name, "Format CSV Valid", "mahir");
+        showFileStatus(
+          dropzone,
+          filePrompt,
+          fileInfo,
+          fileNameSpan,
+          fileStatusSpan,
+          file.name,
+          "Format CSV Valid",
+          "mahir",
+        );
         uploadedFiles[key] = file;
         fileValidationStatus[key] = true;
       } else {
-        showFileStatus(dropzone, filePrompt, fileInfo, fileNameSpan, fileStatusSpan, file.name, `Error: ${errorMsg}`, "remedial");
+        showFileStatus(
+          dropzone,
+          filePrompt,
+          fileInfo,
+          fileNameSpan,
+          fileStatusSpan,
+          file.name,
+          `Error: ${errorMsg}`,
+          "remedial",
+        );
       }
       updateProcessButtonState();
     });
   }
 }
 
-function showFileStatus(dropzone, prompt, info, nameSpan, statusSpan, fileName, statusText, badgeType) {
-  prompt.style.display = 'none';
-  info.style.display = 'flex';
+function showFileStatus(
+  dropzone,
+  prompt,
+  info,
+  nameSpan,
+  statusSpan,
+  fileName,
+  statusText,
+  badgeType,
+) {
+  prompt.style.display = "none";
+  info.style.display = "flex";
   nameSpan.innerText = fileName;
-  
-  statusSpan.className = 'file-status status-badge';
-  if (badgeType === 'mahir') {
-    statusSpan.classList.add('status-mahir');
-  } else if (badgeType === 'remedial') {
-    statusSpan.classList.add('status-remedial');
+
+  statusSpan.className = "file-status status-badge";
+  if (badgeType === "mahir") {
+    statusSpan.classList.add("status-mahir");
+  } else if (badgeType === "remedial") {
+    statusSpan.classList.add("status-remedial");
   } else {
-    statusSpan.classList.add('status-info');
+    statusSpan.classList.add("status-info");
   }
   statusSpan.innerText = statusText;
 }
 
 function validateCSVClientSide(key, file, callback) {
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = function (e) {
     const text = e.target.result;
-    const firstLine = text.split('\n')[0].trim();
-    
+    const firstLine = text.split("\n")[0].trim();
+
     if (!firstLine) {
       callback(false, "File CSV kosong");
       return;
     }
 
     // Ekstrak nama kolom
-    const cols = firstLine.split(',').map(c => c.trim().replace(/^["']|["']$/g, ''));
+    const cols = firstLine
+      .split(",")
+      .map((c) => c.trim().replace(/^["']|["']$/g, ""));
 
     // Kolom wajib masing-masing tabel
     let required = [];
-    if (key === 'mahasiswa') {
-      required = ['NIM', 'Nama'];
-    } else if (key === 'kuis') {
-      required = ['ID_Soal', 'Materi', 'Submateri', 'Bobot', 'Opsi_A', 'Opsi_B', 'Opsi_C', 'Opsi_D', 'Kunci'];
-    } else if (key === 'log') {
-      required = ['NIM', 'ID_Soal', 'Jawaban_Mahasiswa', 'Skor_Biner'];
+    if (key === "mahasiswa") {
+      required = ["NIM", "Nama"];
+    } else if (key === "kuis") {
+      required = [
+        "ID_Soal",
+        "Materi",
+        "Submateri",
+        "Bobot",
+        "Opsi_A",
+        "Opsi_B",
+        "Opsi_C",
+        "Opsi_D",
+        "Kunci",
+      ];
+    } else if (key === "log") {
+      required = ["NIM", "ID_Soal", "Jawaban_Mahasiswa", "Skor_Biner"];
     }
 
-    const missing = required.filter(col => !cols.includes(col));
+    const missing = required.filter((col) => !cols.includes(col));
     if (missing.length > 0) {
-      callback(false, `Kolom kurang: ${missing.join(', ')}`);
+      callback(false, `Kolom kurang: ${missing.join(", ")}`);
     } else {
       callback(true, null);
     }
   };
 
-  reader.onerror = function() {
+  reader.onerror = function () {
     callback(false, "Gagal membaca file");
   };
 
@@ -850,76 +930,89 @@ function validateCSVClientSide(key, file, callback) {
 }
 
 function updateProcessButtonState() {
-  const btn = document.getElementById('btn-process-upload');
+  const btn = document.getElementById("btn-process-upload");
   if (!btn) return;
-  
-  const allValid = fileValidationStatus.mahasiswa && fileValidationStatus.kuis && fileValidationStatus.log;
+
+  const allValid =
+    fileValidationStatus.mahasiswa &&
+    fileValidationStatus.kuis &&
+    fileValidationStatus.log;
   btn.disabled = !allValid;
 }
 
 function submitUploadedFiles() {
-  const btn = document.getElementById('btn-process-upload');
-  const resetBtn = document.getElementById('btn-reset-data');
+  const btn = document.getElementById("btn-process-upload");
+  const resetBtn = document.getElementById("btn-reset-data");
 
   if (!uploadedFiles.mahasiswa || !uploadedFiles.kuis || !uploadedFiles.log) {
-    showUploadMessage("Error: Silakan unggah ketiga berkas terlebih dahulu.", "error");
+    showUploadMessage(
+      "Error: Silakan unggah ketiga berkas terlebih dahulu.",
+      "error",
+    );
     return;
   }
 
   btn.disabled = true;
   resetBtn.disabled = true;
-  showUploadMessage("Sedang mengunggah, memvalidasi relasi data, dan memproses dashboard...", "info");
+  showUploadMessage(
+    "Sedang mengunggah, memvalidasi relasi data, dan memproses dashboard...",
+    "info",
+  );
 
   const formData = new FormData();
-  formData.append('mahasiswa', uploadedFiles.mahasiswa);
-  formData.append('kuis', uploadedFiles.kuis);
-  formData.append('log', uploadedFiles.log);
+  formData.append("mahasiswa", uploadedFiles.mahasiswa);
+  formData.append("kuis", uploadedFiles.kuis);
+  formData.append("log", uploadedFiles.log);
 
-  fetch('/api/upload', {
-    method: 'POST',
-    body: formData
+  fetch("/api/upload", {
+    method: "POST",
+    body: formData,
   })
-  .then(res => res.json().then(data => ({ status: res.status, data })))
-  .then(({ status, data }) => {
-    if (status !== 200) {
-      throw new Error(data.error || "Gagal memperbarui dataset");
-    }
-    
-    showUploadMessage(data.message, "success");
-    
-    // Tarik data hasil pipeline yang baru diperbarui
-    return fetch("/api/results");
-  })
-  .then(res => {
-    if (!res.ok) throw new Error("Gagal mengambil data baru");
-    return res.json();
-  })
-  .then(data => {
-    appData = data;
-    initializeDashboard();
-    
-    // Reset status form upload
-    resetUploadFormStates();
-    
-    // Alihkan ke halaman ringkasan dosen setelah 1.5 detik
-    setTimeout(() => {
-      switchTab('overview');
+    .then((res) => res.json().then((data) => ({ status: res.status, data })))
+    .then(({ status, data }) => {
+      if (status !== 200) {
+        throw new Error(data.error || "Gagal memperbarui dataset");
+      }
+
+      showUploadMessage(data.message, "success");
+
+      // Tarik data hasil pipeline yang baru diperbarui
+      return fetch("/api/results");
+    })
+    .then((res) => {
+      if (!res.ok) throw new Error("Gagal mengambil data baru");
+      return res.json();
+    })
+    .then((data) => {
+      appData = data;
+      initializeDashboard();
+
+      // Reset status form upload
+      resetUploadFormStates();
+
+      // Alihkan ke halaman Dashboard setelah 1.5 detik
+      setTimeout(() => {
+        switchTab("overview");
+        btn.disabled = false;
+        resetBtn.disabled = false;
+      }, 1500);
+    })
+    .catch((err) => {
+      showUploadMessage(err.message, "error");
       btn.disabled = false;
       resetBtn.disabled = false;
-    }, 1500);
-  })
-  .catch(err => {
-    showUploadMessage(err.message, "error");
-    btn.disabled = false;
-    resetBtn.disabled = false;
-  });
+    });
 }
 
 function resetToDefaultData() {
-  const btn = document.getElementById('btn-process-upload');
-  const resetBtn = document.getElementById('btn-reset-data');
+  const btn = document.getElementById("btn-process-upload");
+  const resetBtn = document.getElementById("btn-reset-data");
 
-  if (!confirm("Apakah Anda yakin ingin mereset seluruh data kembali ke data dummy bawaan?")) {
+  if (
+    !confirm(
+      "Apakah Anda yakin ingin mereset seluruh data kembali ke data dummy bawaan?",
+    )
+  ) {
     return;
   }
 
@@ -927,41 +1020,41 @@ function resetToDefaultData() {
   resetBtn.disabled = true;
   showUploadMessage("Sedang mengembalikan data ke bawaan dummy...", "info");
 
-  fetch('/api/reset', {
-    method: 'POST'
+  fetch("/api/reset", {
+    method: "POST",
   })
-  .then(res => res.json().then(data => ({ status: res.status, data })))
-  .then(({ status, data }) => {
-    if (status !== 200) {
-      throw new Error(data.error || "Gagal mereset data");
-    }
-    
-    showUploadMessage("Dataset berhasil direset!", "success");
-    
-    // Tarik data dashboard yang baru direset
-    return fetch("/api/results");
-  })
-  .then(res => {
-    if (!res.ok) throw new Error("Gagal mengambil data baru");
-    return res.json();
-  })
-  .then(data => {
-    appData = data;
-    initializeDashboard();
-    
-    resetUploadFormStates();
-    
-    setTimeout(() => {
-      switchTab('overview');
+    .then((res) => res.json().then((data) => ({ status: res.status, data })))
+    .then(({ status, data }) => {
+      if (status !== 200) {
+        throw new Error(data.error || "Gagal mereset data");
+      }
+
+      showUploadMessage("Dataset berhasil direset!", "success");
+
+      // Tarik data dashboard yang baru direset
+      return fetch("/api/results");
+    })
+    .then((res) => {
+      if (!res.ok) throw new Error("Gagal mengambil data baru");
+      return res.json();
+    })
+    .then((data) => {
+      appData = data;
+      initializeDashboard();
+
+      resetUploadFormStates();
+
+      setTimeout(() => {
+        switchTab("overview");
+        btn.disabled = false;
+        resetBtn.disabled = false;
+      }, 1500);
+    })
+    .catch((err) => {
+      showUploadMessage(err.message, "error");
       btn.disabled = false;
       resetBtn.disabled = false;
-    }, 1500);
-  })
-  .catch(err => {
-    showUploadMessage(err.message, "error");
-    btn.disabled = false;
-    resetBtn.disabled = false;
-  });
+    });
 }
 
 function resetUploadFormStates() {
@@ -969,20 +1062,20 @@ function resetUploadFormStates() {
   fileValidationStatus = { mahasiswa: false, kuis: false, log: false };
   updateProcessButtonState();
 
-  const keys = ['mahasiswa', 'kuis', 'log'];
-  keys.forEach(key => {
+  const keys = ["mahasiswa", "kuis", "log"];
+  keys.forEach((key) => {
     const dropzone = document.getElementById(`dropzone-${key}`);
-    const prompt = dropzone.querySelector('.dropzone-prompt');
-    const info = dropzone.querySelector('.file-info');
+    const prompt = dropzone.querySelector(".dropzone-prompt");
+    const info = dropzone.querySelector(".file-info");
     const input = document.getElementById(`file-${key}`);
-    
+
     input.value = "";
-    prompt.style.display = 'block';
-    info.style.display = 'none';
+    prompt.style.display = "block";
+    info.style.display = "none";
   });
 
-  const msgBox = document.getElementById('upload-message');
-  msgBox.style.display = 'none';
+  const msgBox = document.getElementById("upload-message");
+  msgBox.style.display = "none";
 }
 
 function clearFileSelection(key) {
@@ -991,51 +1084,50 @@ function clearFileSelection(key) {
   updateProcessButtonState();
 
   const dropzone = document.getElementById(`dropzone-${key}`);
-  const prompt = dropzone.querySelector('.dropzone-prompt');
-  const info = dropzone.querySelector('.file-info');
+  const prompt = dropzone.querySelector(".dropzone-prompt");
+  const info = dropzone.querySelector(".file-info");
   const input = document.getElementById(`file-${key}`);
-  
+
   input.value = "";
-  prompt.style.display = 'block';
-  info.style.display = 'none';
+  prompt.style.display = "block";
+  info.style.display = "none";
 }
 
 function showUploadMessage(msg, type) {
-  const msgBox = document.getElementById('upload-message');
+  const msgBox = document.getElementById("upload-message");
   msgBox.innerText = msg;
-  msgBox.style.display = 'block';
-  
-  msgBox.className = 'upload-message-box';
-  if (type === 'success') {
-    msgBox.classList.add('upload-msg-success');
-  } else if (type === 'error') {
-    msgBox.classList.add('upload-msg-error');
+  msgBox.style.display = "block";
+
+  msgBox.className = "upload-message-box";
+  if (type === "success") {
+    msgBox.classList.add("upload-msg-success");
+  } else if (type === "error") {
+    msgBox.classList.add("upload-msg-error");
   } else {
-    msgBox.classList.add('upload-msg-info');
+    msgBox.classList.add("upload-msg-info");
   }
 }
 
 function openRulesModal() {
-  const modal = document.getElementById('rules-modal');
+  const modal = document.getElementById("rules-modal");
   if (modal) {
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+    modal.style.display = "flex";
+    document.body.style.overflow = "hidden";
   }
 }
 
 function closeRulesModal() {
-  const modal = document.getElementById('rules-modal');
+  const modal = document.getElementById("rules-modal");
   if (modal) {
-    modal.style.display = 'none';
-    document.body.style.overflow = 'auto';
+    modal.style.display = "none";
+    document.body.style.overflow = "auto";
   }
 }
 
 // Tutup modal jika pengguna mengeklik di luar area konten modal
-document.addEventListener('click', (e) => {
-  const modal = document.getElementById('rules-modal');
+document.addEventListener("click", (e) => {
+  const modal = document.getElementById("rules-modal");
   if (e.target === modal) {
     closeRulesModal();
   }
 });
-
