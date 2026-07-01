@@ -403,7 +403,7 @@ function formatReasoning(reasoningText) {
                         </div>
                         <div class="item-role-badge badge-support">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                            Learning Path
+                            Rekan Belajar
                         </div>
                     </div>
                     
@@ -454,7 +454,7 @@ function formatReasoning(reasoningText) {
         sentence = `
                 <div class="reasoning-item item-needs-support">
                     <div class="item-header">
-                        <div class="item-role-badge badge-support">Learning Path</div>
+                        <div class="item-role-badge badge-support">Rekan Belajar</div>
                     </div>
                     <div class="item-content">${formatted}.</div>
                 </div>
